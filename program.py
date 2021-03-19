@@ -1,4 +1,3 @@
-import io
 import pickle
 import tkinter
 from tkinter import filedialog
@@ -6,7 +5,7 @@ from typing import Tuple
 from PIL import Image
 
 from button import Button
-from image_object import StaticObject
+from image_object import StaticObject, ImageObject
 from table import Table
 from table_widget import TableWidget
 
@@ -39,16 +38,19 @@ class Program:
         dragged_id = self.canvas.find_withtag('current')[0]
         coords = self.canvas.coords(dragged_id)
         if len(coords) == 2 and dragged_id > len(self.buttons):
+            self.dragging = dragged_id
             self.canvas.coords(dragged_id, (e.x, e.y))
         else:
             for obj in self.created_objects:
                 if isinstance(obj, Table) and obj.drag == dragged_id:
                     obj.move_table(e.x, e.y)
+                    return
 
     def click(self, e):
         if 0 <= e.x <= 50 and 0 <= e.y <= 50:
             for obj in self.created_objects:
                 obj.delete()
+            self.created_objects = []
         if 100 <= e.x <= 980 and 75 <= e.y <= 700:
             self.clicked_canvas(e)
             return
@@ -61,7 +63,14 @@ class Program:
         btn_ids[self.clicked_object]()
 
     def mouse_up(self, e):
-        pass
+        if self.dragging and self.canvas.type(self.dragging) == 'image':
+            self.remove_from_table()
+            self.add_to_table()
+            self.dragging = None
+        else:
+            for x in self.created_objects:
+                if not isinstance(x, Table):
+                    self.add_to_table(x)
 
     @staticmethod
     def create_image_dict(path, image_list):
@@ -105,9 +114,11 @@ class Program:
                 table = Table(self.canvas, obj['data'], obj['x'], obj['y'])
                 table.draw_table()
                 self.created_objects.append(table)
+        for obj in serialized:
             if obj['type'] == 'static':
                 self.created_objects.append(
                     StaticObject(obj['x'], obj['y'], self.canvas, Image.frombytes('RGB', obj['size'], obj['image'])))
+                self.add_to_table(self.created_objects[-1])
 
     def save_exercise(self):
         filename = filedialog.asksaveasfile('wb', filetypes=[('Rozpracovane riesenie',
@@ -134,12 +145,38 @@ class Program:
 
     def clicked_canvas(self, e):
         if self.marker:
-            types = {8: self.create_static_object}
+            types = {5: self.create_clickable_object, 8: self.create_static_object}
             types[self.marker[1]](e)
 
             self.delete_marker()
 
     def create_static_object(self, e):
-        filename = filedialog.askopenfilename(title='Vyber obrazok', filetypes=[('Obrazky', '*.png')])
+        filename = filedialog.askopenfilename(title='Vyber obrazok', initialdir='./textures',
+                                              filetypes=[('Obrazky', '*.png')])
         img = Image.open(filename)
         self.created_objects.append(StaticObject(e.x, e.y, self.canvas, img))
+
+    def create_clickable_object(self, e):
+        filenames = filedialog.askopenfilenames(title='Vyber obrazok', initialdir='./textures',
+                                                filetypes=[('Obrazky', '*.png')])
+        print(filenames)
+
+    def add_to_table(self, obj=None):
+        if obj is not None:
+            dragged_image = obj
+        else:
+            dragged_image = self.find_dragged_object()
+        for item in self.created_objects:
+            if isinstance(item, Table):
+                item.add_object(dragged_image)
+
+    def remove_from_table(self):
+        dragged_image = self.find_dragged_object()
+        for item in self.created_objects:
+            if isinstance(item, Table):
+                item.remove_object(dragged_image)
+
+    def find_dragged_object(self):
+        for item in self.created_objects:
+            if item.obj == self.dragging:
+                return item

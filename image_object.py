@@ -4,10 +4,8 @@ from typing import Tuple
 from PIL import ImageTk
 from PIL.PngImagePlugin import PngImageFile
 
-from created_object import CreatedObject
 
-
-class ImageObject(CreatedObject):
+class ImageObject:
 
     def __init__(self, x: int, y: int, c: tkinter.Canvas, img):
         self._coords: Tuple[int,int] = (x, y)
@@ -51,6 +49,11 @@ class StaticObject(ImageObject):
         coords = self.canvas.coords(self.obj)
         return {'type': 'static', 'image': self.pil_img.tobytes(), 'size': (self.pil_img.width, self.pil_img.height),
                 'x': coords[0], 'y': coords[1]}
+
+    def resize(self, w, h):
+        self.pil_img = self.pil_img.resize((w, h))
+        self.tk_img = ImageTk.PhotoImage(self.pil_img)
+        self.canvas.itemconfigure(self.obj, image=self.tk_img)
 
 
 class DraggableObject(ImageObject):
