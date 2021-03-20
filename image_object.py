@@ -36,13 +36,22 @@ class ImageObject:
         self.canvas.coords(self.obj, *self._coords)
 
 
-class CloneObject(ImageObject):
+class CloneableObject(ImageObject):
 
-    def __init__(self, x, y, c, img):
-        super(CloneObject, self).__init__(x, y, c)
+    def __init__(self, x, y, c, img, order):
+        super(CloneableObject, self).__init__(x, y, c)
+        self.size = (75, 75)
+        self.order = order
+        self.pil_img = img.resize(self.size)
+        self.tk_img = ImageTk.PhotoImage(self.pil_img)
+        self._coords = (45, 120 + 85 * order)
+        self.obj = self.canvas.create_image(*self._coords, image=self.tk_img, tag='clone')
 
     def delete(self):
-        super(CloneObject, self).delete()
+        super(CloneableObject, self).delete()
+
+    def serialize(self):
+        return {'type': 'cloneable', 'image': self.pil_img.tobytes(), 'size': self.size, 'order': self.order}
 
 
 class ClickableObject(ImageObject):

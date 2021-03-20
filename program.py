@@ -6,7 +6,7 @@ from PIL import Image, ImageTk
 
 from background import Background
 from button import Button
-from image_object import StaticObject, ClickableObject, DraggableObject
+from image_object import StaticObject, ClickableObject, DraggableObject, CloneableObject
 from table import Table
 from table_widget import TableWidget
 
@@ -26,6 +26,7 @@ class Program:
         self.buttons = []
         self.created_objects = []
         self.created_images = []
+        self.cloneable_images = []
         self.marker = None
         self.clicked_object = None
         self.dragging = None
@@ -39,6 +40,9 @@ class Program:
         if len(curr) == 0:
             return
         dragged_id = self.canvas.find_withtag('current')[0]
+        if dragged_id in self.canvas.find_withtag('clone'):
+            self.create_clone(dragged_id, e)
+            return
         coords = self.canvas.coords(dragged_id)
         if len(coords) == 2 and dragged_id > len(self.buttons):
             for img in self.created_images:
@@ -54,11 +58,11 @@ class Program:
     def click(self, e):
         if 0 <= e.x <= 50 and 0 <= e.y <= 50:
             self.delete_all()
-        if 100 <= e.x <= 980 and 75 <= e.y <= 700:
+        if 0 <= e.x <= 980 and 75 <= e.y <= 700:
             self.clicked_canvas(e)
             return
         btn_ids = {1: self.new_exercise, 2: self.save_exercise, 4: self.load_exercise, 5: self.mark, 6: self.mark,
-                   7: self.mark, 8: self.mark, 9: self.create_table_widget, 11: self.create_background}
+                   7: self.create_cloneable_object, 8: self.mark, 9: self.create_table_widget, 11: self.create_background}
         curr = self.canvas.find_withtag('current')
         if not len(curr):
             return
@@ -100,7 +104,7 @@ class Program:
 
     def new_exercise(self):
         self.delete_all()
-        
+
     def create_table(self, empty=False):
         if empty:
             self.table_widget = None
@@ -125,6 +129,9 @@ class Program:
                 table.draw_table()
                 self.created_objects.append(table)
         for obj in serialized:
+            if obj['type'] == 'cloneable':
+                self.cloneable_images.append(
+                    CloneableObject(0, 0, self.canvas, Image.frombytes('RGB', obj['size'], obj['image']), obj['order']))
             if obj['type'] == 'background':
                 self.background = Background(Image.frombytes('RGB', obj['size'], obj['image']), self.canvas)
                 self.lower_bg()
@@ -152,6 +159,8 @@ class Program:
             serialized_objects.append(obj.serialize())
         for img in self.created_images:
             serialized_objects.append(img.serialize())
+        for img in self.cloneable_images:
+            serialized_objects.append(img.serialize())
         if self.background:
             serialized_objects.append(self.background.serialize())
         if filename is not None and not isinstance(filename, tuple):
@@ -172,7 +181,8 @@ class Program:
 
     def clicked_canvas(self, e):
         if self.marker:
-            types = {5: self.create_clickable_object, 6: self.create_moveable_object, 8: self.create_static_object}
+            types = {5: self.create_clickable_object, 6: self.create_moveable_object, 7: self.create_cloneable_object,
+                     8: self.create_static_object}
             types[self.marker[1]](e)
 
             self.delete_marker()
@@ -222,6 +232,9 @@ class Program:
         return False
 
     def delete_all(self):
+        for obj in self.cloneable_images:
+            obj.delete()
+        self.cloneable_images = []
         for obj in self.created_objects:
             obj.delete()
         self.created_objects = []
@@ -260,6 +273,14 @@ class Program:
         self.created_images.append(ClickableObject(e.x, e.y, self.canvas, imgs))
         self.add_to_table(self.created_images[-1])
 
+    def create_cloneable_object(self):
+        filename = filedialog.askopenfilename(title='Vyber obrazok', initialdir='./images',
+                                              filetypes=[('Obrazky', '*.jpg')])
+        if not filename:
+            return
+        img = Image.open(filename)
+        self.cloneable_images.append(CloneableObject(0, 0, self.canvas, img, len(self.cloneable_images)))
+
     def create_background(self):
         filename = filedialog.askopenfilename(title='Vyber obrazok', initialdir='./images',
                                               filetypes=[('Obrazky', '*.jpg')])
@@ -270,3 +291,11 @@ class Program:
 
     def lower_bg(self):
         self.canvas.tag_lower('bg')
+
+    def create_clone(self, oid, e):
+        for img in self.cloneable_images:
+            if img.obj == oid:
+                self.created_images.append(DraggableObject(e.x, e.y, self.canvas, img.pil_img))
+                self.dragging = self.created_images[-1].obj
+                self.canvas.itemconfig(oid, tag='clone')
+                self.canvas.itemconfig(self.dragging, tag='current')
