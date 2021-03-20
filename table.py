@@ -66,9 +66,9 @@ class Table:
         if self.x <= x <= self.x + self.cols * self.width and self.y <= y <= self.y + self.y * self.rows:
             ix = int((y - self.y) // self.height)
             iy = int((x - self.x) // self.width)
+            self.put_in_middle(ix, iy, img)
             if self.table_objects[ix][iy] == img:
                 return
-            self.put_in_middle(ix, iy, obj)
             if type(self.table_objects[ix][iy]) != int:
                 self.parent.delete(self.table_objects[ix][iy].obj)
             else:
@@ -87,9 +87,10 @@ class Table:
                     self.table_objects[i][j] = cell
                     return
 
-    def put_in_middle(self, ix, iy, obj):
+    def put_in_middle(self, ix, iy, img):
         x, y = (self.x + (self.width * iy) + (self.width / 2)), (self.y + (self.height * ix) + (self.height / 2))
-        self.parent.coords(obj, x, y)
+        img._coords = (x, y)
+        self.parent.coords(img.obj, x, y)
 
     def resize_image(self, img):
         img.resize(self.width, self.height)

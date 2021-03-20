@@ -9,6 +9,7 @@ class TableWidget:
         self.parent = parent
 
         master = tkinter.Tk()
+        master.protocol('WM_DELETE_WINDOW', self.on_close)
         x, y = parent.canvas.winfo_rootx(), parent.canvas.winfo_rooty()
         w, h = parent.canvas.winfo_width(), parent.canvas.winfo_height()
         master.geometry('%dx%d+%d+%d' % (200, 300, x + (w / 2) - 100, y + (h / 2) - 150))
@@ -29,4 +30,8 @@ class TableWidget:
 
     def confirm(self):
         self.parent.create_table()
+        self.master.destroy()
+
+    def on_close(self):
+        self.parent.create_table(True)
         self.master.destroy()
