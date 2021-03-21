@@ -1,6 +1,6 @@
 import pickle
 import tkinter
-from tkinter import filedialog
+from tkinter import filedialog, messagebox
 from typing import Tuple
 from PIL import Image, ImageTk
 
@@ -36,6 +36,7 @@ class Program:
         self.clicked_object = None
         self.dragging = None
         self.menu = None
+        self.serialized_data = []
         self.initialize_buttons()
         self.canvas.create_rectangle(100, 75, 980, 700, width=5, outline='black')
         self.table_widget = None
@@ -84,8 +85,6 @@ class Program:
                 clicked = self.canvas.find_withtag('current')[0]
             except IndexError:
                 return
-            if self.background is not None and clicked == self.canvas.find_withtag('bg')[0]:
-                return
             if clicked in self.canvas.find_withtag('text'):
                 self.menu = TextMenu(self, self.get_text_by_id(clicked))
                 self.menu.menu.tk_popup(e.x_root, e.y_root)
@@ -95,7 +94,8 @@ class Program:
                     self.canvas.itemconfig(clicked, tag='image')
                 else:
                     return
-            self.menu = ImageMenu(self, self.get_image_by_id(clicked))
+
+            self.menu = ImageMenu(self, self.get_image_by_id(clicked), self.background and clicked == self.background.obj)
             self.menu.menu.tk_popup(e.x_root, e.y_root)
 
     def mouse_up(self, e):
@@ -136,6 +136,8 @@ class Program:
             self.text_widget = TextWidget(self)
 
     def new_exercise(self):
+        if self.serialized_data != self.get_serialized_data():
+            self.ask_save()
         self.delete_all()
 
     def create_table(self, empty=False):
@@ -160,12 +162,15 @@ class Program:
         self.text_widget = None
 
     def load_exercise(self):
+        if self.serialized_data != self.get_serialized_data():
+            self.ask_save()
         path = filedialog.askopenfilename(filetypes=[('Rozpracovane riesenie',
                                                    '*.pickle')], defaultextension='*.pickle', initialdir='./exercises')
         if not path:
             return
         with open(path, 'rb') as read:
             serialized = pickle.load(read)
+        self.serialized_data = serialized
         self.delete_all()
         for obj in serialized:
             if obj['type'] == 'table':
@@ -200,17 +205,9 @@ class Program:
         filename = filedialog.asksaveasfile('wb', filetypes=[('Rozpracovane riesenie',
                                                           '*.pickle')], defaultextension='*.pickle', initialdir='./exercises')
 
-        serialized_objects = []
-        for obj in self.created_objects:
-            serialized_objects.append(obj.serialize())
-        for img in self.created_images:
-            serialized_objects.append(img.serialize())
-        for img in self.cloneable_images:
-            serialized_objects.append(img.serialize())
-        if self.background:
-            serialized_objects.append(self.background.serialize())
+        self.serialized_data = self.get_serialized_data()
         if filename is not None and not isinstance(filename, tuple):
-            pickle.dump(serialized_objects, filename)
+            pickle.dump(self.serialized_data, filename)
 
     def mark(self):
         self.delete_marker()
@@ -352,6 +349,8 @@ class Program:
         return imgs
 
     def get_image_by_id(self, id_):
+        if self.background and self.background.obj == id_:
+            return self.background
         for image in self.created_images:
             if image.obj == id_:
                 return image
@@ -362,3 +361,19 @@ class Program:
             if item.obj == id_:
                 return item
         return
+
+    def get_serialized_data(self):
+        serialized = []
+        for obj in self.created_objects:
+            serialized.append(obj.serialize())
+        for img in self.created_images:
+            serialized.append(img.serialize())
+        for img in self.cloneable_images:
+            serialized.append(img.serialize())
+        if self.background:
+            serialized.append(self.background.serialize())
+        return serialized
+
+    def ask_save(self):
+        if messagebox.askyesno(title='Alert', message='Chces ulozit zadanie?'):
+            self.save_exercise()

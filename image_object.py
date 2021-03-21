@@ -1,7 +1,7 @@
 import tkinter
 from typing import Tuple
 
-from PIL import ImageTk
+from PIL import ImageTk, Image
 from PIL.PngImagePlugin import PngImageFile
 
 
@@ -98,13 +98,12 @@ class ClickableObject(ImageObject):
 
     def resize(self, w, h):
         for i in range(len(self.pil_imgs)):
-            self.pil_imgs[i] = self.pil_imgs[i].resize((w, h))
+            self.pil_imgs[i] = self.pil_imgs[i].resize((w, h), resample=Image.CUBIC)
             self.tk_imgs[i] = ImageTk.PhotoImage(self.pil_imgs[i])
         self.size = self.pil_imgs[0].size
         self.canvas.itemconfig(self.obj, image=self.tk_imgs[self.index])
 
     def collision(self, e, other):
-        ow, oy = other.size[0] / 2, other.size[1] / 2
         x, y = e.x, e.y
         mx, my = self.canvas.coords(self.obj)
         w, h = self.pil_imgs[self.index].size
@@ -138,7 +137,7 @@ class StaticObject(ImageObject):
                 'x': coords[0], 'y': coords[1]}
 
     def resize(self, w, h):
-        self.pil_img = self.pil_img.resize((w, h))
+        self.pil_img = self.pil_img.resize((w, h), resample=Image.CUBIC)
         self.tk_img = ImageTk.PhotoImage(self.pil_img)
         self.size = self.pil_img.size
         self.canvas.itemconfigure(self.obj, image=self.tk_img)
@@ -177,7 +176,7 @@ class DraggableObject(ImageObject):
                 'x': coords[0], 'y': coords[1]}
 
     def resize(self, w, h):
-        self.pil_img = self.pil_img.resize((w, h))
+        self.pil_img = self.pil_img.resize((w, h), resample=Image.CUBIC)
         self.tk_img = ImageTk.PhotoImage(self.pil_img)
         self.size = self.pil_img.size
         self.canvas.itemconfigure(self.obj, image=self.tk_img)
