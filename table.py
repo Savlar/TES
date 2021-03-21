@@ -3,11 +3,12 @@ import tkinter
 
 class Table:
 
-    def __init__(self, parent: tkinter.Canvas, data, x, y):
+    def __init__(self, parent: tkinter.Canvas, data, x, y, color):
         self.parent = parent
         self.obj = None
         self.x = x
         self.y = y
+        self.color = color
         self.drag = None
         self.data = data
         self.rows, self.cols, self.width, self.height = data[0], data[1], data[2], data[3]
@@ -18,7 +19,7 @@ class Table:
         for i in range(self.rows):
             x = self.x
             for j in range(self.cols):
-                cell = self.parent.create_rectangle(x, y, x + self.width, y + self.height, outline='black')
+                cell = self.parent.create_rectangle(x, y, x + self.width, y + self.height, outline='black', fill="#%02x%02x%02x" % self.color)
                 self.table_objects[i].append(cell)
                 x += self.width
             if i == 0:
@@ -58,7 +59,7 @@ class Table:
                     self.parent.delete(obj)
 
     def serialize(self):
-        return {'type': 'table', 'data': self.data, 'x': self.x, 'y': self.y}
+        return {'type': 'table', 'data': self.data, 'x': self.x, 'y': self.y, 'color': self.color}
 
     def add_object(self, img):
         obj = img.obj
@@ -66,7 +67,11 @@ class Table:
         if self.x <= x <= self.x + self.cols * self.width and self.y <= y <= self.y + self.y * self.rows:
             ix = int((y - self.y) // self.height)
             iy = int((x - self.x) // self.width)
+            if type(self.table_objects[ix][iy]) != int and self.table_objects[ix][iy] != img:
+
+                return
             self.put_in_middle(ix, iy, img)
+
             if self.table_objects[ix][iy] == img:
                 return
             if type(self.table_objects[ix][iy]) != int:
@@ -75,6 +80,7 @@ class Table:
                 self.parent.delete(self.table_objects[ix][iy])
             self.table_objects[ix][iy] = img
             self.resize_image(img)
+            self.parent.tag_lower('bg')
 
     def remove_object(self, img):
         for i in range(len(self.table_objects)):
@@ -83,8 +89,10 @@ class Table:
                     self.table_objects[i][j] = None
                     cell = self.parent.create_rectangle(j * self.width + self.x, i * self.height + self.y,
                                                         (j + 1) * self.width + self.x, (i + 1) * self.height + self.y,
-                                                        outline='black')
+                                                        outline='black', fill="#%02x%02x%02x" % self.color)
                     self.table_objects[i][j] = cell
+                    self.parent.tag_lower(cell)
+                    self.parent.tag_lower('bg')
                     return
 
     def put_in_middle(self, ix, iy, img):

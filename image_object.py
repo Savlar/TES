@@ -61,12 +61,21 @@ class ClickableObject(ImageObject):
         self.pil_imgs = imgs
         self.tk_imgs = []
         self.index = 0
+        self.size = None
+        self.obj = None
+        self.initialize()
+
+    def initialize(self):
+        self.delete()
+        self.tk_imgs = []
+        self.index = 0
         self.size = self.pil_imgs[0].size
-        for img in imgs:
+        for img in self.pil_imgs:
             self.tk_imgs.append(ImageTk.PhotoImage(img))
         self.resize(*self.size)
-        self.obj = self.canvas.create_image(x, y, image=self.tk_imgs[0])
+        self.obj = self.canvas.create_image(*self._coords, image=self.tk_imgs[0], tag='image')
         self.check_coords()
+        self.canvas.tag_raise(self.obj)
 
     def delete(self):
         super(ClickableObject, self).delete()
@@ -108,10 +117,17 @@ class StaticObject(ImageObject):
     def __init__(self, x, y, c, img):
         super(StaticObject, self).__init__(x, y, c)
         self.pil_img: PngImageFile = img
-        self.tk_img = ImageTk.PhotoImage(img)
+        self.size = None
+        self.tk_img = None
+        self.obj = None
+        self.initialize()
+
+    def initialize(self):
         self.size = self.pil_img.size
-        self.obj = self.canvas.create_image(x, y, image=self.tk_img)
+        self.tk_img = ImageTk.PhotoImage(self.pil_img)
+        self.obj = self.canvas.create_image(*self._coords, image=self.tk_img, tag='image')
         self.check_coords()
+        self.canvas.tag_raise(self.obj)
 
     def delete(self):
         super(StaticObject, self).delete()
@@ -140,10 +156,17 @@ class DraggableObject(ImageObject):
     def __init__(self, x, y, c, img):
         super(DraggableObject, self).__init__(x, y, c)
         self.pil_img: PngImageFile = img
-        self.tk_img = ImageTk.PhotoImage(img)
+        self.tk_img = None
+        self.size = None
+        self.obj = None
+        self.initialize()
+
+    def initialize(self):
         self.size = self.pil_img.size
-        self.obj = self.canvas.create_image(x, y, image=self.tk_img)
+        self.tk_img = ImageTk.PhotoImage(self.pil_img)
+        self.obj = self.canvas.create_image(*self._coords, image=self.tk_img, tag='image')
         self.check_coords()
+        self.canvas.tag_raise(self.obj)
 
     def delete(self):
         super(DraggableObject, self).delete()

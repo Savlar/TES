@@ -1,4 +1,5 @@
 import tkinter
+from tkinter import colorchooser
 
 from counter import Counter
 
@@ -12,10 +13,11 @@ class TableWidget:
         master.protocol('WM_DELETE_WINDOW', self.on_close)
         x, y = parent.canvas.winfo_rootx(), parent.canvas.winfo_rooty()
         w, h = parent.canvas.winfo_width(), parent.canvas.winfo_height()
-        master.geometry('%dx%d+%d+%d' % (200, 300, x + (w / 2) - 100, y + (h / 2) - 150))
+        master.geometry('%dx%d+%d+%d' % (200, 350, x + (w / 2) - 100, y + (h / 2) - 150))
         self.master = master
         self.row_count = row_count
         self.col_count = col_count
+        self.rgb = (255, 255, 255)
 
         # labels
         tkinter.Label(master, text='Pocet riadkov: ').grid(row=0, column=0, rowspan=2)
@@ -26,7 +28,13 @@ class TableWidget:
         self.counters = [Counter(self.master, 0, 1, 1, 10, 1), Counter(self.master, 2, 1, 1, 10, 1),
                          Counter(self.master, 4, 1, 20, 100, 10), Counter(self.master, 6, 1, 20, 100, 10)]
 
+        tkinter.Button(master, text='Farba', command=self.choose_color).grid(row=8, column=0)
         tkinter.Button(master, text='Potvrdit', command=self.confirm).grid(row=10, column=0)
+
+    def choose_color(self):
+        color_code = colorchooser.askcolor(title="Zvol farbu")
+        self.rgb = tuple(map(int, color_code[0]))
+        self.master.attributes('-topmost', True)
 
     def confirm(self):
         self.parent.create_table()
