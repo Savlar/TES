@@ -6,9 +6,11 @@ from PIL import Image, ImageTk
 
 from background import Background
 from button import Button
+from functions import get_images, get_image
 from image_menu import ImageMenu
 from image_object import StaticObject, ClickableObject, DraggableObject, CloneableObject
 from table import Table
+from table_menu import TableMenu
 from table_widget import TableWidget
 from text import Text
 from text_menu import TextMenu
@@ -25,7 +27,8 @@ class Program:
         self.canvas.bind('<Button-3>', self.right_click)
         self.canvas.images = self.images = \
             self.create_image_dict('textures/', ['new_task', 'save', 'save_final', 'load', 'clickable',
-                                                 'moveable', 'clone', 'static', 'table', 'text', 'background'])
+                                                 'moveable', 'clone', 'static', 'table', 'text', 'background',
+                                                 'enlarge', 'shrink', 'flip_horizontal', 'flip_vertical', 'bin'])
         self.canvas.created_images = []
         self.background = None
         self.buttons = []
@@ -85,6 +88,11 @@ class Program:
                 clicked = self.canvas.find_withtag('current')[0]
             except IndexError:
                 return
+            for item in self.created_objects:
+                if isinstance(item, Table) and clicked == item.drag:
+                    self.menu = TableMenu(self, item)
+                    self.menu.menu.tk_popup(e.x_root, e.y_root)
+                    return
             if clicked in self.canvas.find_withtag('text'):
                 self.menu = TextMenu(self, self.get_text_by_id(clicked))
                 self.menu.menu.tk_popup(e.x_root, e.y_root)
@@ -118,13 +126,18 @@ class Program:
     def initialize_buttons(self):
         x = 20
         y = 30
-        for key in self.images:
+        for key in list(self.images.keys())[:-5]:
             self.buttons.append(Button(self.images[key], x, y, self.canvas))
             x += 50
             if key == 'load':
                 x += 150
             if key == 'static':
                 x += 100
+        x = 1020
+        y = 100
+        for key in list(self.images.keys())[-5:]:
+            self.buttons.append(Button(self.images[key], x, y, self.canvas))
+            y += 70
         self.canvas.update()
 
     def create_table_widget(self):
@@ -170,8 +183,8 @@ class Program:
             return
         with open(path, 'rb') as read:
             serialized = pickle.load(read)
-        self.serialized_data = serialized
         self.delete_all()
+        self.serialized_data = serialized
         for obj in serialized:
             if obj['type'] == 'table':
                 table = Table(self.canvas, obj['data'], obj['x'], obj['y'], obj['color'])
@@ -227,6 +240,7 @@ class Program:
             types = {5: self.create_clickable_object, 6: self.create_moveable_object, 7: self.create_cloneable_object,
                      8: self.create_static_object}
             types[self.marker[1]](e)
+            self.created_images[-1].check_coords()
 
             self.delete_marker()
         for item in self.created_images:
@@ -243,7 +257,6 @@ class Program:
         for item in self.created_objects:
             if isinstance(item, Table):
                 item.add_object(dragged_image)
-                dragged_image.check_coords()
 
     def remove_from_table(self):
         dragged_image = self.find_dragged_object()
@@ -287,36 +300,38 @@ class Program:
         if self.background:
             self.background.delete()
         self.background = None
+        self.serialized_data = []
 
     def create_static_object(self, e):
-        image = self.get_image()
+        image = get_image()
         if not image:
             return
+        print(e.x, e.y)
         self.created_images.append(StaticObject(e.x, e.y, self.canvas, image))
         self.add_to_table(self.created_images[-1])
 
     def create_moveable_object(self, e):
-        image = self.get_image()
+        image = get_image()
         if not image:
             return
         self.created_images.append(DraggableObject(e.x, e.y, self.canvas, image))
         self.add_to_table(self.created_images[-1])
 
     def create_clickable_object(self, e):
-        images = self.get_images()
+        images = get_images()
         if len(images) == 0:
             return
         self.created_images.append(ClickableObject(e.x, e.y, self.canvas, images))
         self.add_to_table(self.created_images[-1])
 
     def create_cloneable_object(self):
-        image = self.get_image()
+        image = get_image()
         if not image:
             return
         self.cloneable_images.append(CloneableObject(0, 0, self.canvas, image, len(self.cloneable_images)))
 
     def create_background(self):
-        image = self.get_image()
+        image = get_image()
         if not image:
             return
         self.background = Background(image, self.canvas)
@@ -329,24 +344,10 @@ class Program:
         for img in self.cloneable_images:
             if img.obj == oid:
                 self.created_images.append(DraggableObject(e.x, e.y, self.canvas, img.pil_img))
+                self.created_images[-1].check_coords()
                 self.dragging = self.created_images[-1].obj
                 self.canvas.itemconfig(oid, tag='clone')
                 self.canvas.itemconfig(self.dragging, tag='current')
-
-    @staticmethod
-    def get_image():
-        filename = filedialog.askopenfilename(title='Vyber obrazok', initialdir='./images',
-                                              filetypes=[('Obrazky', '*.jpg')])
-        return Image.open(filename)
-
-    @staticmethod
-    def get_images():
-        filenames = filedialog.askopenfilenames(title='Vyber obrazok', initialdir='./images',
-                                    filetypes=[('Obrazky', '*.jpg')])
-        imgs = []
-        for file in filenames:
-            imgs.append(Image.open(file))
-        return imgs
 
     def get_image_by_id(self, id_):
         if self.background and self.background.obj == id_:

@@ -4,16 +4,11 @@ from tkinter import Menu
 class TextMenu:
 
     def __init__(self, parent, text):
-        self.parent = parent
+        self.p = parent
         self.text = text
-        self.menu = Menu(self.parent.canvas, tearoff=0)
+        self.menu = Menu(self.p.canvas, tearoff=0)
         self.menu.add_command(label='Vymaz', command=self.delete)
 
     def delete(self):
         self.text.delete()
-        i = 0
-        for item in self.parent.created_objects:
-            if item == self.text:
-                break
-            i += 1
-        self.parent.created_objects.pop(i)
+        self.p.created_objects.pop(self.p.created_objects.index(self.text))

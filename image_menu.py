@@ -1,5 +1,6 @@
 from tkinter import Menu
 
+from functions import get_images, get_image
 from image_object import ClickableObject
 from image_size import ImageSize
 from table import Table
@@ -24,24 +25,21 @@ class ImageMenu:
 
     def remove(self):
         self.delete()
-        i = 0
-        for item in self.parent.created_images:
-            if item == self.image:
-                break
-            i += 1
-        if i < len(self.parent.created_images):
-            self.parent.created_images.pop(i)
+        if self.image == self.parent.background:
+            self.parent.background = None
+            return
+        self.parent.created_images.pop(self.parent.created_images.index(self.image))
 
     def change_image(self):
         if isinstance(self.image, ClickableObject):
-            files = self.parent.get_images()
+            files = get_images()
             if not files:
                 return
             self.delete()
             self.image.pil_imgs = files
             self.image.initialize()
         else:
-            file = self.parent.get_image()
+            file = get_image()
             if not file:
                 return
             self.delete()

@@ -40,11 +40,12 @@ class CloneableObject(ImageObject):
 
     def __init__(self, x, y, c, img, order):
         super(CloneableObject, self).__init__(x, y, c)
+        self.original = img
         self.size = (75, 75)
         self.order = order
         self.pil_img = img.resize(self.size)
         self.tk_img = ImageTk.PhotoImage(self.pil_img)
-        self._coords = (45, 120 + 85 * order)
+        self._coords = (50, 120 + 85 * order)
         self.obj = self.canvas.create_image(*self._coords, image=self.tk_img, tag='clone')
 
     def delete(self):
@@ -59,6 +60,7 @@ class ClickableObject(ImageObject):
     def __init__(self, x, y, c, imgs):
         super(ClickableObject, self).__init__(x, y, c)
         self.pil_imgs = imgs
+        self.originals = imgs
         self.tk_imgs = []
         self.index = 0
         self.size = None
@@ -74,7 +76,6 @@ class ClickableObject(ImageObject):
             self.tk_imgs.append(ImageTk.PhotoImage(img))
         self.resize(*self.size)
         self.obj = self.canvas.create_image(*self._coords, image=self.tk_imgs[0], tag='image')
-        self.check_coords()
         self.canvas.tag_raise(self.obj)
 
     def delete(self):
@@ -97,6 +98,8 @@ class ClickableObject(ImageObject):
             self.canvas.itemconfig(self.obj, image=self.tk_imgs[self.index])
 
     def resize(self, w, h):
+        if (w, h) > self.size:
+            self.pil_imgs = self.originals
         for i in range(len(self.pil_imgs)):
             self.pil_imgs[i] = self.pil_imgs[i].resize((w, h), resample=Image.CUBIC)
             self.tk_imgs[i] = ImageTk.PhotoImage(self.pil_imgs[i])
@@ -116,6 +119,7 @@ class StaticObject(ImageObject):
     def __init__(self, x, y, c, img):
         super(StaticObject, self).__init__(x, y, c)
         self.pil_img: PngImageFile = img
+        self.original = img
         self.size = None
         self.tk_img = None
         self.obj = None
@@ -125,7 +129,6 @@ class StaticObject(ImageObject):
         self.size = self.pil_img.size
         self.tk_img = ImageTk.PhotoImage(self.pil_img)
         self.obj = self.canvas.create_image(*self._coords, image=self.tk_img, tag='image')
-        self.check_coords()
         self.canvas.tag_raise(self.obj)
 
     def delete(self):
@@ -137,6 +140,8 @@ class StaticObject(ImageObject):
                 'x': coords[0], 'y': coords[1]}
 
     def resize(self, w, h):
+        if (w, h) > self.size:
+            self.pil_img = self.original
         self.pil_img = self.pil_img.resize((w, h), resample=Image.CUBIC)
         self.tk_img = ImageTk.PhotoImage(self.pil_img)
         self.size = self.pil_img.size
@@ -155,6 +160,7 @@ class DraggableObject(ImageObject):
     def __init__(self, x, y, c, img):
         super(DraggableObject, self).__init__(x, y, c)
         self.pil_img: PngImageFile = img
+        self.original = img
         self.tk_img = None
         self.size = None
         self.obj = None
@@ -164,7 +170,6 @@ class DraggableObject(ImageObject):
         self.size = self.pil_img.size
         self.tk_img = ImageTk.PhotoImage(self.pil_img)
         self.obj = self.canvas.create_image(*self._coords, image=self.tk_img, tag='image')
-        self.check_coords()
         self.canvas.tag_raise(self.obj)
 
     def delete(self):
@@ -176,6 +181,8 @@ class DraggableObject(ImageObject):
                 'x': coords[0], 'y': coords[1]}
 
     def resize(self, w, h):
+        if (w, h) > self.size:
+            self.pil_img = self.original
         self.pil_img = self.pil_img.resize((w, h), resample=Image.CUBIC)
         self.tk_img = ImageTk.PhotoImage(self.pil_img)
         self.size = self.pil_img.size
