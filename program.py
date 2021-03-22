@@ -2,7 +2,7 @@ import pickle
 import tkinter
 from tkinter import filedialog, messagebox
 from typing import Tuple
-from PIL import Image, ImageTk
+from PIL import Image
 
 from background import Background
 from button import Button
@@ -73,15 +73,17 @@ class Program:
         if 0 <= e.x <= 980 and 75 <= e.y <= 700:
             self.clicked_canvas(e)
             return
+        self.delete_marker()
         btn_ids = {1: self.new_exercise, 2: self.save_exercise, 4: self.load_exercise, 5: self.mark, 6: self.mark,
                    7: self.create_cloneable_object, 8: self.mark, 9: self.create_table_widget,
-                   10: self.create_text_widget, 11: self.create_background}
+                   10: self.create_text_widget, 11: self.create_background, 14: self.mark, 15: self.mark}
         curr = self.canvas.find_withtag('current')
         if not len(curr):
             return
         self.clicked_object = curr[0]
         btn_ids[self.clicked_object]()
 
+    # TODO rewrite
     def right_click(self, e):
         if 100 <= e.x <= 980 and 75 <= e.y <= 700:
             try:
@@ -108,7 +110,7 @@ class Program:
 
     def mouse_up(self, e):
         if self.dragging and self.canvas.type(self.dragging) == 'image':
-            self.set_image_coords(self.find_dragged_object(), e)
+            self.set_image_coords(self.find_dragged_object(), (e.x, e.y))
             self.remove_from_table()
             self.add_to_table()
             self.dragging = None
@@ -174,6 +176,7 @@ class Program:
         self.created_objects.append(text)
         self.text_widget = None
 
+    # TODO rewrite
     def load_exercise(self):
         if self.serialized_data != self.get_serialized_data():
             self.ask_save()
@@ -190,28 +193,32 @@ class Program:
                 table = Table(self.canvas, obj['data'], obj['x'], obj['y'], obj['color'])
                 table.draw_table()
                 self.created_objects.append(table)
+        def read(data, size):
+            images = []
+            for img in data:
+                images.append(Image.frombytes('RGB', size, img))
+            return images
+
         for obj in serialized:
             if obj['type'] == 'text':
                 self.created_objects.append(Text(obj['x'], obj['y'], self.canvas, obj['text'], obj['size'], obj['color'], obj['font']))
             if obj['type'] == 'cloneable':
                 self.cloneable_images.append(
-                    CloneableObject(0, 0, self.canvas, Image.frombytes('RGB', obj['size'], obj['image']), obj['order']))
+                    CloneableObject(0, 0, self.canvas, read(obj['image'], obj['size']), obj['order']))
             if obj['type'] == 'background':
-                self.background = Background(Image.frombytes('RGB', obj['size'], obj['image']), self.canvas)
+                self.background = Background(read(obj['image'], obj['size']), self.canvas)
                 self.lower_bg()
             if obj['type'] == 'static':
                 self.created_images.append(
-                    StaticObject(obj['x'], obj['y'], self.canvas, Image.frombytes('RGB', obj['size'], obj['image'])))
+                    StaticObject(obj['x'], obj['y'], self.canvas, read(obj['image'], obj['size'])))
                 self.add_to_table(self.created_images[-1])
             if obj['type'] == 'clickable':
-                images = []
-                for img in obj['images']:
-                    images.append(Image.frombytes('RGB', obj['size'], img))
-                self.created_images.append(ClickableObject(obj['x'], obj['y'], self.canvas, images))
+
+                self.created_images.append(ClickableObject(obj['x'], obj['y'], self.canvas, read(obj['image'], obj['size'])))
                 self.add_to_table(self.created_images[-1])
             if obj['type'] == 'draggable':
                 self.created_images.append(
-                    DraggableObject(obj['x'], obj['y'], self.canvas, Image.frombytes('RGB', obj['size'], obj['image'])))
+                    DraggableObject(obj['x'], obj['y'], self.canvas, read(obj['image'], obj['size'])))
                 self.add_to_table(self.created_images[-1])
 
     def save_exercise(self):
@@ -238,11 +245,11 @@ class Program:
     def clicked_canvas(self, e):
         if self.marker:
             types = {5: self.create_clickable_object, 6: self.create_moveable_object, 7: self.create_cloneable_object,
-                     8: self.create_static_object}
+                     8: self.create_static_object, 14: self.flip_horizontally, 15: self.flip_vertically}
             types[self.marker[1]](e)
-            self.created_images[-1].check_coords()
-
             self.delete_marker()
+            if len(self.created_images):
+                self.created_images[-1].check_coords()
         for item in self.created_images:
             if isinstance(item, ClickableObject):
                 item.clicked(e)
@@ -277,13 +284,13 @@ class Program:
         if not self.in_collision(coords, img):
             for obj in self.created_images:
                 if img == obj:
-                    img._coords = (coords.x, coords.y)
+                    img._coords = coords
         else:
             self.canvas.coords(img.obj, *img._coords)
 
     def in_collision(self, coords, obj):
         for img in self.created_images:
-            if obj != img and img.collision(coords, obj):
+            if obj != img and img.collision(coords):
                 return True
         return False
 
@@ -306,15 +313,14 @@ class Program:
         image = get_image()
         if not image:
             return
-        print(e.x, e.y)
-        self.created_images.append(StaticObject(e.x, e.y, self.canvas, image))
+        self.created_images.append(StaticObject(e.x, e.y, self.canvas, [image]))
         self.add_to_table(self.created_images[-1])
 
     def create_moveable_object(self, e):
         image = get_image()
         if not image:
             return
-        self.created_images.append(DraggableObject(e.x, e.y, self.canvas, image))
+        self.created_images.append(DraggableObject(e.x, e.y, self.canvas, [image]))
         self.add_to_table(self.created_images[-1])
 
     def create_clickable_object(self, e):
@@ -328,7 +334,7 @@ class Program:
         image = get_image()
         if not image:
             return
-        self.cloneable_images.append(CloneableObject(0, 0, self.canvas, image, len(self.cloneable_images)))
+        self.cloneable_images.append(CloneableObject(0, 0, self.canvas, [image], len(self.cloneable_images)))
 
     def create_background(self):
         image = get_image()
@@ -343,7 +349,7 @@ class Program:
     def create_clone(self, oid, e):
         for img in self.cloneable_images:
             if img.obj == oid:
-                self.created_images.append(DraggableObject(e.x, e.y, self.canvas, img.pil_img))
+                self.created_images.append(DraggableObject(e.x, e.y, self.canvas, img.original))
                 self.created_images[-1].check_coords()
                 self.dragging = self.created_images[-1].obj
                 self.canvas.itemconfig(oid, tag='clone')
@@ -378,3 +384,13 @@ class Program:
     def ask_save(self):
         if messagebox.askyesno(title='Alert', message='Chces ulozit zadanie?'):
             self.save_exercise()
+
+    def flip_vertically(self, e):
+        for image in self.created_images:
+            if image.click(e):
+                image.flip(True)
+
+    def flip_horizontally(self, e):
+        for image in self.created_images:
+            if image.click(e):
+                image.flip()
