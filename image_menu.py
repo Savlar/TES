@@ -28,7 +28,10 @@ class ImageMenu:
         if self.image == self.parent.background:
             self.parent.background = None
             return
-        self.parent.created_images.pop(self.parent.created_images.index(self.image))
+        if self.image in self.parent.cloneable_images:
+            self.parent.cloneable_images.pop(self.parent.cloneable_images.index(self.image))
+        else:
+            self.parent.created_images.pop(self.parent.created_images.index(self.image))
 
     def change_image(self):
         if isinstance(self.image, ClickableObject):
@@ -36,14 +39,14 @@ class ImageMenu:
             if not files:
                 return
             self.delete()
-            self.image.pil_imgs = files
+            self.image.pil_img = files
             self.image.initialize()
         else:
             file = get_image()
             if not file:
                 return
             self.delete()
-            self.image.pil_img = file
+            self.image.pil_img = [file]
             self.image.initialize()
         self.parent.add_to_table(self.image)
 

@@ -70,21 +70,19 @@ class Table:
         obj = img.obj
         bbox = list(self.parent.bbox(obj))
         coords = [img._coords, (bbox[0], bbox[1]), (bbox[2], bbox[3])]
-        while bbox[0] < self.x + (self.width * self.cols) and bbox[3] > self.x:
+        while bbox[0] < self.x + (self.width * self.cols) and bbox[2] > self.x:
             coords.append((bbox[0], bbox[1]))
             coords.append((bbox[0], bbox[3]))
             start = bbox[1]
-            while start < self.y + (self.height * self.rows):
+            while start < self.y + (self.height * self.rows) and bbox[3] > self.y:
                 coords.append((bbox[0], start))
                 coords.append((bbox[2], start))
                 start += self.height
             bbox[0] += self.width
-
         for x, y in coords:
             if self.x <= x <= self.x + self.cols * self.width and self.y <= y <= self.y + self.y * self.rows:
                 ix = int((y - self.y) // self.height)
                 iy = int((x - self.x) // self.width)
-                print(coords[0], ix, iy)
                 try:
                     if type(self.table_objects[ix][iy]) != int and self.table_objects[ix][iy] != img:
                         continue
@@ -114,6 +112,7 @@ class Table:
         for i in range(len(self.table_objects)):
             for j in range(len(self.table_objects[i])):
                 if self.table_objects[i][j] == img:
+                    self.parent.tag_raise(img)
                     self.table_objects[i][j] = None
                     cell = self.parent.create_rectangle(j * self.width + self.x, i * self.height + self.y,
                                                         (j + 1) * self.width + self.x, (i + 1) * self.height + self.y,

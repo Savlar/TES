@@ -85,28 +85,29 @@ class Program:
 
     # TODO rewrite
     def right_click(self, e):
-        if 100 <= e.x <= 980 and 75 <= e.y <= 700:
-            try:
-                clicked = self.canvas.find_withtag('current')[0]
-            except IndexError:
-                return
-            for item in self.created_objects:
-                if isinstance(item, Table) and clicked == item.drag:
-                    self.menu = TableMenu(self, item)
-                    self.menu.menu.tk_popup(e.x_root, e.y_root)
-                    return
-            if clicked in self.canvas.find_withtag('text'):
-                self.menu = TextMenu(self, self.get_text_by_id(clicked))
+        try:
+            clicked = self.canvas.find_withtag('current')[0]
+        except IndexError:
+            return
+        if clicked < 17:
+            return
+        for item in self.created_objects:
+            if isinstance(item, Table) and clicked == item.drag:
+                self.menu = TableMenu(self, item)
                 self.menu.menu.tk_popup(e.x_root, e.y_root)
                 return
-            if clicked not in self.canvas.find_withtag('image'):
-                if self.canvas.type(clicked) == 'image':
-                    self.canvas.itemconfig(clicked, tag='image')
-                else:
-                    return
-
-            self.menu = ImageMenu(self, self.get_image_by_id(clicked), self.background and clicked == self.background.obj)
+        if clicked in self.canvas.find_withtag('text'):
+            self.menu = TextMenu(self, self.get_text_by_id(clicked))
             self.menu.menu.tk_popup(e.x_root, e.y_root)
+            return
+        if clicked not in self.canvas.find_withtag('image'):
+            if self.canvas.type(clicked) == 'image':
+                self.canvas.itemconfig(clicked, tag='image')
+            else:
+                return
+        image = self.get_image_by_id(clicked)
+        self.menu = ImageMenu(self, image, image in self.cloneable_images or (self.background and clicked == self.background.obj))
+        self.menu.menu.tk_popup(e.x_root, e.y_root)
 
     def mouse_up(self, e):
         if self.dragging and self.canvas.type(self.dragging) == 'image':
@@ -206,7 +207,7 @@ class Program:
                 self.cloneable_images.append(
                     CloneableObject(0, 0, self.canvas, read(obj['image'], obj['size']), obj['order']))
             if obj['type'] == 'background':
-                self.background = Background(read(obj['image'], obj['size']), self.canvas)
+                self.background = Background(*read(obj['image'], obj['size']), self.canvas)
                 self.lower_bg()
             if obj['type'] == 'static':
                 self.created_images.append(
@@ -349,7 +350,7 @@ class Program:
     def create_clone(self, oid, e):
         for img in self.cloneable_images:
             if img.obj == oid:
-                self.created_images.append(DraggableObject(e.x, e.y, self.canvas, img.original))
+                self.created_images.append(DraggableObject(e.x, e.y, self.canvas, img.original.copy()))
                 self.created_images[-1].check_coords()
                 self.dragging = self.created_images[-1].obj
                 self.canvas.itemconfig(oid, tag='clone')
@@ -358,7 +359,7 @@ class Program:
     def get_image_by_id(self, id_):
         if self.background and self.background.obj == id_:
             return self.background
-        for image in self.created_images:
+        for image in self.created_images + self.cloneable_images:
             if image.obj == id_:
                 return image
         return

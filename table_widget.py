@@ -32,9 +32,12 @@ class TableWidget:
         tkinter.Button(master, text='Potvrdit', command=self.confirm).grid(row=10, column=0)
 
     def choose_color(self):
+        self.master.lower()
         color_code = colorchooser.askcolor(title="Zvol farbu")
-        self.rgb = tuple(map(int, color_code[0]))
-        self.master.attributes('-topmost', True)
+        if not color_code:
+            self.rgb = tuple(map(int, color_code[0]))
+        self.master.tkraise()
+        # self.master.attributes('-topmost', True)
 
     def confirm(self):
         self.parent.create_table()

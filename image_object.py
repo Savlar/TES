@@ -97,6 +97,7 @@ class CloneableObject(ImageObject):
         self.initialize()
 
     def initialize(self):
+        self.original = self.pil_img.copy()
         self.to_tk_image()
         self.resize(*self.size)
         self.obj = self.canvas.create_image(*self._coords, image=self.tk_img[0], tag='clone')
@@ -107,6 +108,8 @@ class CloneableObject(ImageObject):
 
     def serialize(self):
         data = super(CloneableObject, self).serialize()
+        data['image'] = [self.original[0].tobytes()]
+        data['size'] = self.original[0].size
         data['type'] = 'cloneable'
         data['order'] = self.order
         return data
@@ -118,6 +121,10 @@ class ClickableObject(ImageObject):
         super(ClickableObject, self).__init__(x, y, c, imgs)
         self.index = 0
         self.initialize()
+
+    def initialize(self):
+        self.index = 0
+        super(ClickableObject, self).initialize()
 
     def delete(self):
         super(ClickableObject, self).delete()
