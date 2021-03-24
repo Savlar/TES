@@ -34,7 +34,7 @@ class TableWidget:
     def choose_color(self):
         self.master.lower()
         color_code = colorchooser.askcolor(title="Zvol farbu")
-        if not color_code:
+        if color_code:
             self.rgb = tuple(map(int, color_code[0]))
         self.master.tkraise()
         # self.master.attributes('-topmost', True)

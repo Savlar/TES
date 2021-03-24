@@ -112,7 +112,7 @@ class Table:
         for i in range(len(self.table_objects)):
             for j in range(len(self.table_objects[i])):
                 if self.table_objects[i][j] == img:
-                    self.parent.tag_raise(img)
+                    self.parent.tag_raise('image')
                     self.table_objects[i][j] = None
                     cell = self.parent.create_rectangle(j * self.width + self.x, i * self.height + self.y,
                                                         (j + 1) * self.width + self.x, (i + 1) * self.height + self.y,

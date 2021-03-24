@@ -24,7 +24,7 @@ class TextWidget:
         self.size.grid(row=1, column=0)
 
         self.default_font = tkinter.StringVar(self.master)
-        self.default_font.set(font.families()[0])
+        self.default_font.set('Arial')
 
         fonts = [x for x in font.families()]
         self.font = tkinter.OptionMenu(self.master, self.default_font, *fonts)

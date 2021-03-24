@@ -13,7 +13,7 @@ class ImageObject:
         self.index = None
         self.obj = None
         self.pil_img = img
-        self.original = img.copy()
+        self.original = img[:]
         self.tk_img = []
 
     def initialize(self):
@@ -43,6 +43,8 @@ class ImageObject:
     def resize(self, w, h):
         if (w, h) > self.size:
             self.pil_img = self.original
+        self.index = 0
+        self.to_tk_image()
         for i in range(len(self.pil_img)):
             self.pil_img[i] = self.pil_img[i].resize((w, h), resample=Image.CUBIC)
             self.tk_img[i] = ImageTk.PhotoImage(self.pil_img[i])
@@ -50,6 +52,7 @@ class ImageObject:
         self.canvas.itemconfig(self.obj, image=self.tk_img[self.index or 0])
 
     def flip(self, vertically=False):
+        self.delete()
         for i in range(len(self.pil_img)):
             self.pil_img[i] = self.pil_img[i].transpose(method=Image.FLIP_TOP_BOTTOM if vertically else Image.FLIP_LEFT_RIGHT)
         self.initialize()
@@ -97,6 +100,7 @@ class CloneableObject(ImageObject):
         self.initialize()
 
     def initialize(self):
+        self.order = 0
         self.original = self.pil_img.copy()
         self.to_tk_image()
         self.resize(*self.size)
@@ -124,6 +128,7 @@ class ClickableObject(ImageObject):
 
     def initialize(self):
         self.index = 0
+        self.original = self.pil_img[:]
         super(ClickableObject, self).initialize()
 
     def delete(self):

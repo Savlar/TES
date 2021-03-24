@@ -207,7 +207,7 @@ class Program:
                 self.cloneable_images.append(
                     CloneableObject(0, 0, self.canvas, read(obj['image'], obj['size']), obj['order']))
             if obj['type'] == 'background':
-                self.background = Background(*read(obj['image'], obj['size']), self.canvas)
+                self.background = Background(read(obj['image'], obj['size']), self.canvas)
                 self.lower_bg()
             if obj['type'] == 'static':
                 self.created_images.append(
@@ -341,7 +341,7 @@ class Program:
         image = get_image()
         if not image:
             return
-        self.background = Background(image, self.canvas)
+        self.background = Background([image], self.canvas)
         self.lower_bg()
 
     def lower_bg(self):

@@ -12,12 +12,13 @@ class Background:
         self.initialize()
 
     def initialize(self):
-        self.pil_img = self.pil_img.resize(self.size)
-        self.tk_img = ImageTk.PhotoImage(self.pil_img)
-        self.obj = self.canvas.create_image(540, 387.5, image=self.tk_img, tag='bg')
+        self.pil_img = [self.pil_img[0].resize(self.size)]
+        self.tk_img = [ImageTk.PhotoImage(self.pil_img[0])]
+        self.obj = self.canvas.create_image(540, 387.5, image=self.tk_img[0], tag='bg')
+        self.canvas.tag_lower('bg')
 
     def delete(self):
         self.canvas.delete(self.obj)
 
     def serialize(self):
-        return {'type': 'background', 'size': (880, 625), 'image': [self.pil_img.tobytes()]}
+        return {'type': 'background', 'size': (880, 625), 'image': [self.pil_img[0].tobytes()]}
