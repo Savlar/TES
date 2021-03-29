@@ -33,9 +33,10 @@ class ImageObject:
         self.canvas.delete(self.obj)
 
     def move(self, x, y):
+        x1, y1, x2, y2 = self.canvas.coords(self.canvas.find_withtag('area')[0])
         w, h = self.size
         w2, h2 = w / 2, h / 2
-        if x - w2 < 100 or x + w2 > 980 or y - h2 < 75 or y + h2 > 700:
+        if x - w2 < x1 or x + w2 > x2 or y - h2 < y1 or y + h2 > y2:
             return
         self.canvas.coords(self.obj, x, y)
         # self._coords = (x, y)
@@ -65,15 +66,16 @@ class ImageObject:
         return mx - w2 <= x <= mx + w2 and my - h2 <= y <= my + h2
 
     def check_coords(self):
+        x1, y1, x2, y2 = self.canvas.coords(self.canvas.find_withtag('area')[0])
         w2, h2 = self.size[0] / 2, self.size[1] / 2
-        if self._coords[0] - w2 < 100:
-            self._coords = (100 + w2, self._coords[1])
-        if self._coords[0] + w2 > 980:
-            self._coords = (980 - w2, self._coords[1])
-        if self._coords[1] - h2 < 75:
-            self._coords = (self._coords[0], 75 + h2)
-        if self._coords[1] + h2 > 700:
-            self._coords = (self._coords[0], 700 - h2)
+        if self._coords[0] - w2 < x1:
+            self._coords = (x1 + w2, self._coords[1])
+        if self._coords[0] + w2 > x2:
+            self._coords = (x2 - w2, self._coords[1])
+        if self._coords[1] - h2 < y1:
+            self._coords = (self._coords[0], y1 + h2)
+        if self._coords[1] + h2 > y2:
+            self._coords = (self._coords[0], y2 - h2)
         self.canvas.coords(self.obj, *self._coords)
 
     def click(self, e):

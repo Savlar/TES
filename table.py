@@ -32,8 +32,9 @@ class Table:
         height2 = (coords[3] - coords[1]) / 2
         diff_x = -((coords[0] + width2) - x)
         diff_y = -((coords[1] + height2) - y)
-        if (x + diff_x) - self.width * self.cols < 100 or x + width2 > 980 or y + height2 < 75 or \
-                (y + diff_y) + self.height * self.rows > 700:
+        x1, y1, x2, y2 = self.parent.coords(self.parent.find_withtag('area')[0])
+        if (x + diff_x) - self.width * self.cols < x1 or x + width2 > x2 or y + height2 < y1 or \
+                (y + diff_y) + self.height * self.rows > y2:
             return
         self.x += diff_x
         self.y += diff_y

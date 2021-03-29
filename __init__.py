@@ -11,6 +11,6 @@ if __name__ == '__main__':
     y = (hs / 2) - (h / 2)
     win.geometry('%dx%d+%d+%d' % (w, h, x, y))
     canvas = tkinter.Canvas(master=win, height=720, width=1080)
-    canvas.pack()
-    Program(canvas)
+    canvas.pack(expand=tkinter.YES, fill=tkinter.BOTH)
+    Program(canvas, 1080, 720)
     win.mainloop()

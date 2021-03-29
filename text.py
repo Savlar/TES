@@ -19,7 +19,8 @@ class Text:
     def move(self, x, y):
         bounds = self.canvas.bbox(self.obj)
         w2, h2 = abs((bounds[2] - bounds[0]) / 2), abs((bounds[3] - bounds[1]) / 2)
-        if x - w2 < 100 or x + w2 > 980 or y - h2 < 75 or y + h2 > 700:
+        x1, y1, x2, y2 = self.canvas.coords(self.canvas.find_withtag('area')[0])
+        if x - w2 < x1 or x + w2 > x2 or y - h2 < y1 or y + h2 > y2:
             return
         self.canvas.coords(self.obj, x, y)
         self.x = x

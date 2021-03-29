@@ -19,12 +19,16 @@ from text_widget import TextWidget
 
 class Program:
 
-    def __init__(self, canvas: tkinter.Canvas):
+    def __init__(self, canvas: tkinter.Canvas, width, height):
         self.canvas = canvas
+        self.width = width
+        self.height = height
         self.canvas.bind('<B1-Motion>', self.drag)
         self.canvas.bind('<ButtonRelease-1>', self.mouse_up)
         self.canvas.bind('<Button-1>', self.click)
         self.canvas.bind('<Button-3>', self.right_click)
+        self.canvas.bind('<Configure>', self.on_resize)
+        self.resizing = False
         self.canvas.images = self.images = \
             self.create_image_dict('textures/', ['new_task', 'save', 'save_final', 'load', 'clickable',
                                                  'moveable', 'clone', 'static', 'table', 'text', 'background',
@@ -41,7 +45,7 @@ class Program:
         self.menu = None
         self.serialized_data = []
         self.initialize_buttons()
-        self.canvas.create_rectangle(100, 75, 980, 700, width=5, outline='black')
+        self.canvas.create_rectangle(100, 75, 980, 700, width=5, outline='black', tag='area')
         self.table_widget = None
         self.text_widget = None
         self.canvas.update()
@@ -69,8 +73,20 @@ class Program:
                     obj.move_table(e.x, e.y)
                     return
 
+    def on_resize(self, e):
+        if not self.resizing:
+            self.resizing = True
+            wscale = e.width / self.width
+            hscale = e.height / self.height
+            self.width = e.width
+            self.height = e.height
+            self.canvas.config(width=self.width, height=self.height)
+            self.canvas.scale('all', 0, 0, wscale, hscale)
+            self.resizing = False
+
     def click(self, e):
-        if 0 <= e.x <= 980 and 75 <= e.y <= 700:
+        x1, y1, x2, y2 = self.canvas.coords(self.canvas.find_withtag('area')[0])
+        if x1 <= e.x <= x2 and y1 <= e.y <= y2:
             self.clicked_canvas(e)
             return
         self.delete_marker()
