@@ -42,15 +42,24 @@ class ImageObject:
         # self._coords = (x, y)
 
     def resize(self, w, h):
-        if (w, h) > self.size:
-            self.pil_img = self.original
+        self.pil_img = self.original[:]
         self.index = 0
         self.to_tk_image()
         for i in range(len(self.pil_img)):
-            self.pil_img[i] = self.pil_img[i].resize((w, h), resample=Image.CUBIC)
+            self.pil_img[i] = self.pil_img[i].resize((w, h), resample=Image.LANCZOS)
             self.tk_img[i] = ImageTk.PhotoImage(self.pil_img[i])
         self.size = self.pil_img[0].size
         self.canvas.itemconfig(self.obj, image=self.tk_img[self.index or 0])
+
+    def rescale(self, pct_w, pct_h):
+        # x, y = self._coords
+        # self._coords = (x * pct_w, y * pct_h)
+
+        w, h = self.size
+        new_w = int(w * pct_w)
+        new_h = int(h * pct_h)
+        self.resize(new_w, new_h)
+        self.check_coords()
 
     def flip(self, vertically=False):
         self.delete()

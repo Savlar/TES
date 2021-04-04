@@ -45,7 +45,7 @@ class Program:
         self.menu = None
         self.serialized_data = []
         self.initialize_buttons()
-        self.canvas.create_rectangle(100, 75, 980, 700, width=5, outline='black', tag='area')
+        self.area = self.canvas.create_rectangle(100, 75, 1000, 700, width=5, outline='black', tag='area')
         self.table_widget = None
         self.text_widget = None
         self.canvas.update()
@@ -81,7 +81,13 @@ class Program:
             self.width = e.width
             self.height = e.height
             self.canvas.config(width=self.width, height=self.height)
-            self.canvas.scale('all', 0, 0, wscale, hscale)
+            # self.canvas.scale('all', 0, 0, wscale, hscale)
+            for image in self.created_images:
+                image.rescale(wscale, hscale)
+            for i in self.buttons:
+                i.resize()
+            self.canvas.coords(self.area, 100, 75, self.width - 80, self.height - 20)
+            # map(lambda x: x.resize, self.buttons)
             self.resizing = False
 
     def click(self, e):
@@ -143,21 +149,20 @@ class Program:
         return img
 
     def initialize_buttons(self):
-        x = 20
-        y = 30
+        x = 30
+        y = 33
         for key in list(self.images.keys())[:-5]:
-            self.buttons.append(Button(self.images[key], x, y, self.canvas))
-            x += 50
+            self.buttons.append(Button(self.images[key], x, y, self))
+            x += 60
             if key == 'load':
                 x += 150
             if key == 'static':
                 x += 100
-        x = 1020
+        x = 1040
         y = 100
         for key in list(self.images.keys())[-5:]:
-            self.buttons.append(Button(self.images[key], x, y, self.canvas))
+            self.buttons.append(Button(self.images[key], x, y, self))
             y += 70
-        self.canvas.update()
 
     def create_table_widget(self):
         if not self.table_widget:
@@ -249,8 +254,11 @@ class Program:
     def mark(self):
         self.delete_marker()
         x, y = self.canvas.coords(self.clicked_object)
+        w, h = 28, 24
+        if self.clicked_object > 11:
+            w, h = 28, 28
         self.marker = \
-            (self.canvas.create_rectangle(x - 20, y - 20, x + 20, y + 20, outline='red'), self.clicked_object)
+            (self.canvas.create_rectangle(x - w, y - h, x + w, y + h, outline='red', width=5), self.clicked_object)
 
     def delete_marker(self):
         if self.marker:
