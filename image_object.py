@@ -3,6 +3,8 @@ from typing import Tuple
 
 from PIL import ImageTk, Image
 
+from constants import DRAG_SIZE
+
 
 class ImageObject:
 
@@ -13,11 +15,13 @@ class ImageObject:
         self.index = None
         self.obj = None
         self.pil_img = img
-        self.original = img[:]
+        self.original = []
+        self.drag = []
         self.tk_img = []
 
     def initialize(self):
         self.size = self.pil_img[0].size
+        self.original = self.pil_img[:]
         self.to_tk_image()
         self.resize(*self.size)
         self.obj = self.canvas.create_image(*self._coords, image=self.tk_img[0], tag='image')
@@ -54,7 +58,6 @@ class ImageObject:
     def rescale(self, pct_w, pct_h):
         # x, y = self._coords
         # self._coords = (x * pct_w, y * pct_h)
-
         w, h = self.size
         new_w = int(w * pct_w)
         new_h = int(h * pct_h)
@@ -99,6 +102,69 @@ class ImageObject:
         data = {'image': img_bytes, 'size': self.size, 'x': self._coords[0], 'y': self._coords[1]}
 
         return data
+
+    def draw_drag(self, redraw=False):
+        x, y = self._coords
+        w2, h2 = self.size[0] / 2, self.size[1] / 2
+        sizes = [(x - w2 - DRAG_SIZE, y - h2 - DRAG_SIZE, x - w2 + DRAG_SIZE, y - h2 + DRAG_SIZE),
+                 (x - DRAG_SIZE, y - h2 - DRAG_SIZE, x + DRAG_SIZE, y - h2 + DRAG_SIZE),
+                 (x + w2 - DRAG_SIZE, y - h2 - DRAG_SIZE, x + w2 + DRAG_SIZE, y - h2 + DRAG_SIZE),
+                 (x + w2 - DRAG_SIZE, y - DRAG_SIZE, x + w2 + DRAG_SIZE, y + DRAG_SIZE),
+                 (x + w2 - DRAG_SIZE, y + h2 - DRAG_SIZE, x + w2 + DRAG_SIZE, y + h2 + DRAG_SIZE),
+                 (x - DRAG_SIZE, y + h2 - DRAG_SIZE, x + DRAG_SIZE, y + h2 + DRAG_SIZE),
+                 (x - w2 - DRAG_SIZE, y + h2 - DRAG_SIZE, x - w2 + DRAG_SIZE, y + h2 + DRAG_SIZE),
+                 (x - w2 - DRAG_SIZE, y - DRAG_SIZE, x - w2 + DRAG_SIZE, y + DRAG_SIZE)]
+        for i, size in enumerate(sizes):
+            if redraw:
+                self.canvas.coords(self.drag[i], *size)
+            else:
+                self.drag.append(self.canvas.create_rectangle(*size, tag='img_drag', fill='coral1', width=2, outline='red'))
+
+    def drag_resize(self, x, y, drag_id):
+        curr_x, curr_y = self._coords
+        index = self.drag.index(drag_id)
+        if index == 0:
+            y_diff = int((curr_y - y) - (self.size[1] // 2))
+            x_diff = int((curr_x - x) - (self.size[0] // 2))
+            self.resize(self.size[0] + x_diff, self.size[1] + y_diff)
+            self._coords = (curr_x - (x_diff / 2), curr_y - (y_diff / 2))
+        if index == 1:
+            y_diff = int((curr_y - y) - (self.size[1] // 2))
+            self.resize(self.size[0], self.size[1] + y_diff)
+            self._coords = (curr_x, curr_y - (y_diff / 2))
+        if index == 2:
+            x_diff = int((x - curr_x) - (self.size[0] // 2))
+            y_diff = int((curr_y - y) - (self.size[1] // 2))
+            self.resize(self.size[0] + x_diff, self.size[1] + y_diff)
+            self._coords = (curr_x + (x_diff / 2), curr_y - (y_diff / 2))
+        if index == 3:
+            x_diff = int((x - curr_x) - (self.size[0] // 2))
+            self.resize(self.size[0] + x_diff, self.size[1])
+            self._coords = (curr_x + (x_diff / 2), curr_y)
+        if index == 4:
+            x_diff = int((x - curr_x) - (self.size[0] // 2))
+            y_diff = int((y - curr_y) - (self.size[1] // 2))
+            self.resize(self.size[0] + x_diff, self.size[1] + y_diff)
+            self._coords = (curr_x + (x_diff / 2), curr_y + (y_diff / 2))
+        if index == 5:
+            y_diff = int((y - curr_y) - (self.size[1] // 2))
+            self.resize(self.size[0], self.size[1] + y_diff)
+            self._coords = (curr_x, curr_y + (y_diff / 2))
+        if index == 6:
+            x_diff = int((curr_x - x) - (self.size[0] // 2))
+            y_diff = int((y - curr_y) - (self.size[1] // 2))
+            self.resize(self.size[0] + x_diff, self.size[1] + y_diff)
+            self._coords = (curr_x - (x_diff / 2), curr_y + (y_diff / 2))
+        if index == 7:
+            x_diff = int((curr_x - x) - (self.size[0] // 2))
+            self.resize(self.size[0] + x_diff, self.size[1])
+            self._coords = (curr_x - (x_diff / 2), curr_y)
+        self.draw_drag(True)
+        self.check_coords()
+
+    def delete_drag(self):
+        for drag in self.drag:
+            self.canvas.delete(drag)
 
 
 class CloneableObject(ImageObject):

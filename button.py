@@ -1,8 +1,9 @@
 class Button:
 
-    def __init__(self, image, x, y, parent):
+    def __init__(self, image, x, y, parent, left_pct=None):
         self.canvas = parent.canvas
         self.parent = parent
+        self.left_pct = left_pct
         self.mr = parent.width - x
         self.mt = y
         self._image = image
@@ -22,7 +23,9 @@ class Button:
         self._image = value
 
     def resize(self):
-        new_x = self.parent.width - self.mr
+        if self.left_pct:
+            new_x = self.left_pct * self.parent.width
+        else:
+            new_x = self.parent.width - self.mr
         new_y = self.mt
-        print(new_x, new_y)
         self.canvas.coords(self.obj, new_x, new_y)

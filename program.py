@@ -32,7 +32,7 @@ class Program:
         self.canvas.images = self.images = \
             self.create_image_dict('textures/', ['new_task', 'save', 'save_final', 'load', 'clickable',
                                                  'moveable', 'clone', 'static', 'table', 'text', 'background',
-                                                 'enlarge', 'shrink', 'flip_horizontal', 'flip_vertical', 'bin'])
+                                                 'enlarge', 'flip_horizontal', 'flip_vertical', 'bin'])
         self.canvas.created_images = []
         self.background = None
         self.buttons = []
@@ -55,6 +55,7 @@ class Program:
         if len(curr) == 0:
             return
         dragged_id = self.canvas.find_withtag('current')[0]
+
         if dragged_id in self.canvas.find_withtag('clone'):
             self.create_clone(dragged_id, e)
             return
@@ -62,6 +63,7 @@ class Program:
         if len(coords) == 2 and dragged_id > len(self.buttons):
             for img in self.created_images:
                 if img.obj == dragged_id:
+                    img.delete_drag()
                     img.move(e.x, e.y)
             for x in self.created_objects:
                 if x.obj == dragged_id:
@@ -72,6 +74,10 @@ class Program:
                 if isinstance(obj, Table) and obj.drag == dragged_id:
                     obj.move_table(e.x, e.y)
                     return
+            for image in self.created_images:
+                if dragged_id in image.drag:
+                    self.dragging = dragged_id
+                    image.drag_resize(e.x, e.y, dragged_id)
 
     def on_resize(self, e):
         if not self.resizing:
@@ -81,16 +87,21 @@ class Program:
             self.width = e.width
             self.height = e.height
             self.canvas.config(width=self.width, height=self.height)
-            # self.canvas.scale('all', 0, 0, wscale, hscale)
-            for image in self.created_images:
-                image.rescale(wscale, hscale)
-            for i in self.buttons:
-                i.resize()
-            self.canvas.coords(self.area, 100, 75, self.width - 80, self.height - 20)
+            # self.canvas.coords(self.area, 100, 75, self.width - 80, self.height - 20)
+            # for image in self.created_images:
+            #     image.rescale(wscale, hscale)
+            self.canvas.scale('all', 0, 0, wscale, hscale)
+
+            # for i in self.buttons:
+            #     i.resize()
+            # print(self.canvas.coords(self.canvas.find_withtag('area')[0]))
+
             # map(lambda x: x.resize, self.buttons)
             self.resizing = False
 
     def click(self, e):
+        if self.canvas.find_withtag('current') and self.canvas.find_withtag('current')[0] in self.canvas.find_withtag('img_drag'):
+            return
         x1, y1, x2, y2 = self.canvas.coords(self.canvas.find_withtag('area')[0])
         if x1 <= e.x <= x2 and y1 <= e.y <= y2:
             self.clicked_canvas(e)
@@ -98,7 +109,7 @@ class Program:
         self.delete_marker()
         btn_ids = {1: self.new_exercise, 2: self.save_exercise, 4: self.load_exercise, 5: self.mark, 6: self.mark,
                    7: self.create_cloneable_object, 8: self.mark, 9: self.create_table_widget,
-                   10: self.create_text_widget, 11: self.create_background, 14: self.mark, 15: self.mark}
+                   10: self.create_text_widget, 11: self.create_background, 12: self.mark, 13: self.mark, 14: self.mark}
         curr = self.canvas.find_withtag('current')
         if not len(curr):
             return
@@ -132,11 +143,12 @@ class Program:
         self.menu.menu.tk_popup(e.x_root, e.y_root)
 
     def mouse_up(self, e):
-        if self.dragging and self.canvas.type(self.dragging) == 'image':
-            self.set_image_coords(self.find_dragged_object(), (e.x, e.y))
-            self.remove_from_table()
-            self.add_to_table()
-            self.dragging = None
+        if self.dragging:
+            if self.canvas.type(self.dragging) == 'image':
+                self.set_image_coords(self.find_dragged_object(), (e.x, e.y))
+                self.remove_from_table()
+                self.add_to_table()
+                self.dragging = None
         else:
             for x in self.created_images:
                 self.add_to_table(x)
@@ -151,8 +163,8 @@ class Program:
     def initialize_buttons(self):
         x = 30
         y = 33
-        for key in list(self.images.keys())[:-5]:
-            self.buttons.append(Button(self.images[key], x, y, self))
+        for key in list(self.images.keys())[:-4]:
+            self.buttons.append(Button(self.images[key], x, y, self, left_pct=x/self.width))
             x += 60
             if key == 'load':
                 x += 150
@@ -160,7 +172,7 @@ class Program:
                 x += 100
         x = 1040
         y = 100
-        for key in list(self.images.keys())[-5:]:
+        for key in list(self.images.keys())[-4:]:
             self.buttons.append(Button(self.images[key], x, y, self))
             y += 70
 
@@ -270,14 +282,16 @@ class Program:
     def clicked_canvas(self, e):
         if self.marker:
             types = {5: self.create_clickable_object, 6: self.create_moveable_object, 7: self.create_cloneable_object,
-                     8: self.create_static_object, 14: self.flip_horizontally, 15: self.flip_vertically}
+                     8: self.create_static_object, 12: self.image_resizer, 13: self.flip_horizontally, 14: self.flip_vertically}
             types[self.marker[1]](e)
             self.delete_marker()
             if len(self.created_images):
                 self.created_images[-1].check_coords()
-        for item in self.created_images:
-            if isinstance(item, ClickableObject):
-                item.clicked(e)
+        else:
+            for item in self.created_images:
+                item.delete_drag()
+                if isinstance(item, ClickableObject):
+                    item.clicked(e)
 
     def add_to_table(self, obj=None):
         if obj is not None:
@@ -419,3 +433,8 @@ class Program:
         for image in self.created_images:
             if image.click(e):
                 image.flip()
+
+    def image_resizer(self, e):
+        for image in self.created_images:
+            if image.click(e):
+                image.draw_drag()
