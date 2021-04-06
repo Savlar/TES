@@ -34,6 +34,7 @@ class ImageObject:
             self.tk_img.append(ImageTk.PhotoImage(image))
 
     def delete(self):
+        self.delete_drag()
         self.canvas.delete(self.obj)
 
     def move(self, x, y):
@@ -98,7 +99,7 @@ class ImageObject:
     def serialize(self):
         img_bytes = []
         for img in self.pil_img:
-            img_bytes.append(img.tobytes())
+            img_bytes.append((img.mode, img.tobytes()))
         data = {'image': img_bytes, 'size': self.size, 'x': self._coords[0], 'y': self._coords[1]}
 
         return data
@@ -165,6 +166,7 @@ class ImageObject:
     def delete_drag(self):
         for drag in self.drag:
             self.canvas.delete(drag)
+        self.drag = []
 
 
 class CloneableObject(ImageObject):
@@ -189,7 +191,7 @@ class CloneableObject(ImageObject):
 
     def serialize(self):
         data = super(CloneableObject, self).serialize()
-        data['image'] = [self.original[0].tobytes()]
+        data['image'] = [(self.original[0].mode, self.original[0].tobytes())]
         data['size'] = self.original[0].size
         data['type'] = 'cloneable'
         data['order'] = self.order

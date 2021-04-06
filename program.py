@@ -43,6 +43,7 @@ class Program:
         self.clicked_object = None
         self.dragging = None
         self.menu = None
+        self.clicked_resizer = False
         self.serialized_data = []
         self.initialize_buttons()
         self.area = self.canvas.create_rectangle(100, 75, 1000, 700, width=5, outline='black', tag='area')
@@ -61,6 +62,8 @@ class Program:
             return
         coords = self.canvas.coords(dragged_id)
         if len(coords) == 2 and dragged_id > len(self.buttons):
+            if self.clicked_resizer:
+                return
             for img in self.created_images:
                 if img.obj == dragged_id:
                     img.delete_drag()
@@ -114,6 +117,8 @@ class Program:
         if not len(curr):
             return
         self.clicked_object = curr[0]
+        if self.clicked_object == 12:
+            self.clicked_resizer = True
         btn_ids[self.clicked_object]()
 
     # TODO rewrite
@@ -229,8 +234,9 @@ class Program:
                 self.created_objects.append(table)
         def read(data, size):
             images = []
-            for img in data:
-                images.append(Image.frombytes('RGB', size, img))
+            for item in data:
+                mode, img = item
+                images.append(Image.frombytes(mode, size, img))
             return images
 
         for obj in serialized:
@@ -287,11 +293,13 @@ class Program:
             self.delete_marker()
             if len(self.created_images):
                 self.created_images[-1].check_coords()
-        else:
-            for item in self.created_images:
-                item.delete_drag()
-                if isinstance(item, ClickableObject):
-                    item.clicked(e)
+            return
+        for item in self.created_images:
+            item.delete_drag()
+            if isinstance(item, ClickableObject):
+                item.clicked(e)
+                return
+        self.clicked_resizer = False
 
     def add_to_table(self, obj=None):
         if obj is not None:
