@@ -1,3 +1,6 @@
+from image_object import CloneableObject, DraggableButtonImage
+
+
 class Button:
 
     def __init__(self, image, x, y, parent, left_pct=None):
@@ -29,3 +32,9 @@ class Button:
             new_x = self.parent.width - self.mr
         new_y = self.mt
         self.canvas.coords(self.obj, new_x, new_y)
+
+
+class DraggableButton:
+
+    def __init__(self, image, x, y, parent, left_pct=None):
+        self.image = DraggableButtonImage(x, y, parent, [image])

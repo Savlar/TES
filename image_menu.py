@@ -30,6 +30,8 @@ class ImageMenu:
             return
         if self.image in self.parent.cloneable_images:
             self.parent.cloneable_images.pop(self.parent.cloneable_images.index(self.image))
+        elif self.image in self.parent.added_tools:
+            self.parent.added_tools.pop(self.parent.added_tools.index(self.image))
         else:
             self.parent.created_images.pop(self.parent.created_images.index(self.image))
 

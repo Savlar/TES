@@ -8,9 +8,11 @@ from constants import DRAG_SIZE
 
 class ImageObject:
 
-    def __init__(self, x: int, y: int, c: tkinter.Canvas, img):
+    def __init__(self, x: int, y: int, parent, img):
         self._coords: Tuple[int,int] = (x, y)
-        self.canvas = c
+        self.parent = parent
+        self.canvas = parent.canvas
+        self.student = self.parent.student
         self.size = None
         self.index = None
         self.obj = None
@@ -229,6 +231,10 @@ class ClickableObject(ImageObject):
     def collision(self, e):
         return super(ClickableObject, self).collision(e)
 
+    def move(self, x, y):
+        if not self.student:
+            super(ClickableObject, self).move(x, y)
+
 
 class StaticObject(ImageObject):
 
@@ -250,6 +256,26 @@ class StaticObject(ImageObject):
     def collision(self, e):
         return super(StaticObject, self).collision(e)
 
+    def move(self, x, y):
+        if not self.student:
+            super(StaticObject, self).move(x, y)
+
+
+class StaticButton(ImageObject):
+
+    def __init__(self, x, y, c, img, oid):
+        super(StaticButton, self).__init__(x, y, c, img)
+        self.oid = oid
+        self.initialize()
+
+    def delete(self):
+        self.canvas.itemconfig(self.oid, state='normal')
+        super(StaticButton, self).delete()
+
+    def move(self, x, y):
+        if not self.student:
+            super(StaticButton, self).move(x, y)
+
 
 class DraggableObject(ImageObject):
 
@@ -270,3 +296,22 @@ class DraggableObject(ImageObject):
 
     def collision(self, e):
         return super(DraggableObject, self).collision(e)
+
+
+class DraggableButtonImage(ImageObject):
+
+    def __init__(self, x, y, c, img):
+        super(DraggableButtonImage, self).__init__(x, y, c, img)
+        self.size = (img[0].width, img[0].height)
+        self._coords = (x, y)
+        self.initialize()
+
+    def initialize(self):
+        self.original = self.pil_img.copy()
+        self.to_tk_image()
+        self.resize(*self.size)
+        self.obj = self.canvas.create_image(*self._coords, image=self.tk_img[0], tag='button_clone')
+        self.canvas.tag_raise(self.obj)
+
+    def delete(self):
+        super(DraggableButtonImage, self).delete()

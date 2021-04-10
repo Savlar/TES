@@ -3,8 +3,9 @@ import tkinter
 
 class Table:
 
-    def __init__(self, parent: tkinter.Canvas, data, x, y, color):
+    def __init__(self, parent, data, x, y, color):
         self.parent = parent
+        self.canvas = parent.canvas
         self.obj = None
         self.x = x
         self.y = y
@@ -19,40 +20,40 @@ class Table:
         for i in range(self.rows):
             x = self.x
             for j in range(self.cols):
-                cell = self.parent.create_rectangle(x, y, x + self.width, y + self.height, outline='black', fill="#%02x%02x%02x" % self.color)
+                cell = self.canvas.create_rectangle(x, y, x + self.width, y + self.height, outline='black', fill="#%02x%02x%02x" % self.color)
                 self.table_objects[i].append(cell)
                 x += self.width
-            if i == 0:
-                self.drag = self.parent.create_oval(x - 5, y - 10, x + 10, y + 5, fill='red', outline='red')
+            if i == 0 and not self.parent.student:
+                self.drag = self.canvas.create_oval(x - 5, y - 10, x + 10, y + 5, fill='red', outline='red')
             y += self.height
 
     def move_table(self, x, y):
-        coords = self.parent.coords(self.drag)
+        coords = self.canvas.coords(self.drag)
         width2 = (coords[2] - coords[0]) / 2
         height2 = (coords[3] - coords[1]) / 2
         diff_x = -((coords[0] + width2) - x)
         diff_y = -((coords[1] + height2) - y)
-        x1, y1, x2, y2 = self.parent.coords(self.parent.find_withtag('area')[0])
+        x1, y1, x2, y2 = self.canvas.coords(self.canvas.find_withtag('area')[0])
         if (x + diff_x) - self.width * self.cols < x1 or x + width2 > x2 or y + height2 < y1 or \
                 (y + diff_y) + self.height * self.rows > y2:
             return
         self.x += diff_x
         self.y += diff_y
-        self.parent.coords(self.drag, (x - width2, y - height2, x + width2, y + height2))
+        self.canvas.coords(self.drag, (x - width2, y - height2, x + width2, y + height2))
 
         for row in self.table_objects:
             for obj in row:
                 if type(obj) != int:
-                    ix, iy = self.parent.coords(obj.obj)
-                    self.parent.coords(obj.obj, ix + diff_x, iy + diff_y)
-                    obj._coords = self.parent.coords(obj.obj)
+                    ix, iy = self.canvas.coords(obj.obj)
+                    self.canvas.coords(obj.obj, ix + diff_x, iy + diff_y)
+                    obj._coords = self.canvas.coords(obj.obj)
                 else:
-                    cell_coords = self.parent.coords(obj)
-                    self.parent.coords(obj, cell_coords[0] + diff_x, cell_coords[1] + diff_y, cell_coords[2] + diff_x,
+                    cell_coords = self.canvas.coords(obj)
+                    self.canvas.coords(obj, cell_coords[0] + diff_x, cell_coords[1] + diff_y, cell_coords[2] + diff_x,
                                        cell_coords[3] + diff_y)
 
     def delete(self, images=None):
-        self.parent.delete(self.drag)
+        self.canvas.delete(self.drag)
         for row in self.table_objects:
             for obj in row:
                 if type(obj) != int:
@@ -60,7 +61,7 @@ class Table:
                     if images:
                         images.pop(images.index(obj))
                 else:
-                    self.parent.delete(obj)
+                    self.canvas.delete(obj)
 
     def serialize(self):
         return {'type': 'table', 'data': self.data, 'x': self.x, 'y': self.y, 'color': self.color}
@@ -69,7 +70,7 @@ class Table:
         if self.in_table(img):
             return
         obj = img.obj
-        bbox = list(self.parent.bbox(obj))
+        bbox = list(self.canvas.bbox(obj))
         coords = [img._coords, (bbox[0], bbox[1]), (bbox[2], bbox[3])]
         while bbox[0] < self.x + (self.width * self.cols) and bbox[2] > self.x:
             coords.append((bbox[0], bbox[1]))
@@ -94,12 +95,12 @@ class Table:
                 if self.table_objects[ix][iy] == img:
                     continue
                 if type(self.table_objects[ix][iy]) != int:
-                    self.parent.delete(self.table_objects[ix][iy].obj)
+                    self.canvas.delete(self.table_objects[ix][iy].obj)
                 else:
-                    self.parent.delete(self.table_objects[ix][iy])
+                    self.canvas.delete(self.table_objects[ix][iy])
                 self.table_objects[ix][iy] = img
                 self.resize_image(img)
-                self.parent.tag_lower('bg')
+                self.canvas.tag_lower('bg')
                 return
 
     def in_table(self, img):
@@ -113,20 +114,20 @@ class Table:
         for i in range(len(self.table_objects)):
             for j in range(len(self.table_objects[i])):
                 if self.table_objects[i][j] == img:
-                    self.parent.tag_raise('image')
+                    self.canvas.tag_raise('image')
                     self.table_objects[i][j] = None
-                    cell = self.parent.create_rectangle(j * self.width + self.x, i * self.height + self.y,
+                    cell = self.canvas.create_rectangle(j * self.width + self.x, i * self.height + self.y,
                                                         (j + 1) * self.width + self.x, (i + 1) * self.height + self.y,
                                                         outline='black', fill="#%02x%02x%02x" % self.color)
                     self.table_objects[i][j] = cell
-                    self.parent.tag_lower(cell)
-                    self.parent.tag_lower('bg')
+                    self.canvas.tag_lower(cell)
+                    self.canvas.tag_lower('bg')
                     return
 
     def put_in_middle(self, ix, iy, img):
         x, y = (self.x + (self.width * iy) + (self.width / 2)), (self.y + (self.height * ix) + (self.height / 2))
         img._coords = (x, y)
-        self.parent.coords(img.obj, x, y)
+        self.canvas.coords(img.obj, x, y)
 
     def resize_image(self, img):
         img.resize(self.width, self.height)

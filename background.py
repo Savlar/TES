@@ -3,8 +3,9 @@ from PIL import ImageTk
 
 class Background:
 
-    def __init__(self, img, canvas):
-        self.canvas = canvas
+    def __init__(self, img, parent):
+        self.parent = parent
+        self.canvas = parent.canvas
         self.pil_img = img[:]
         self.tk_img = None
         self.obj = None
