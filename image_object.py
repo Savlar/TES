@@ -46,7 +46,7 @@ class ImageObject:
         if x - w2 < x1 or x + w2 > x2 or y - h2 < y1 or y + h2 > y2:
             return
         self.canvas.coords(self.obj, x, y)
-        # self._coords = (x, y)
+        self._coords = (x, y)
 
     def resize(self, w, h):
         self.pil_img = self.original[:]
@@ -274,7 +274,20 @@ class StaticButton(ImageObject):
 
     def move(self, x, y):
         if not self.student:
+            self.parent.delete_marker()
             super(StaticButton, self).move(x, y)
+
+    def serialize(self):
+        data = super(StaticButton, self).serialize()
+        data['type'] = 'button'
+        data['parent'] = self.oid
+        return data
+
+    def marker(self):
+        self.parent.delete_marker()
+        w, h = self.size
+        x, y = self._coords
+        self.parent.marker = (self.canvas.create_rectangle(x - w / 2, y - w / 2, x + w / 2, y + h / 2, outline='red', width=4), self.oid)
 
 
 class DraggableObject(ImageObject):

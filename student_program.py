@@ -22,10 +22,9 @@ class StudentProgram(Program):
 
     def click(self, e):
         super(StudentProgram, self).click(e)
-        self.delete_marker()
         btn_ids = {1: self.save_exercise, 2: self.load_exercise}
         curr = self.canvas.find_withtag('current')
-        if not len(curr):
+        if not len(curr) or curr[0] > 2:
             return
         self.clicked_object = curr[0]
         btn_ids[self.clicked_object]()

@@ -58,17 +58,16 @@ class TeacherProgram(Program):
         image = get_image()
         if not image:
             return
-        self.background = Background([image], self.canvas)
+        self.background = Background([image], self)
         self.lower_bg()
 
     def click(self, e):
         super(TeacherProgram, self).click(e)
-        self.delete_marker()
         btn_ids = {1: self.new_exercise, 2: self.save_exercise, 4: self.load_exercise, 5: self.mark, 6: self.mark,
                    7: self.create_cloneable_object, 8: self.mark, 9: self.create_table_widget,
                    10: self.create_text_widget, 11: self.create_background}
         curr = self.canvas.find_withtag('current')
-        if not len(curr):
+        if not len(curr) or curr[0] > 11:
             return
         self.clicked_object = curr[0]
         btn_ids[self.clicked_object]()

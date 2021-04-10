@@ -1,13 +1,13 @@
 import pickle
+import time
 import tkinter
 from tkinter import filedialog, messagebox
 from typing import Tuple
 from PIL import Image
 
 from background import Background
-from button import DraggableButton
 from functions import get_images, get_image
-from image_object import StaticObject, ClickableObject, DraggableObject, CloneableObject
+from image_object import StaticObject, ClickableObject, DraggableObject, CloneableObject, StaticButton
 from table import Table
 from text import Text
 
@@ -36,6 +36,7 @@ class Program:
         self.clicked_object = None
         self.dragging = None
         self.path = None
+        self.clicked_resizer = False
         self.serialized_data = []
         self.area = None
         self.table_widget = None
@@ -60,6 +61,8 @@ class Program:
             return
         coords = self.canvas.coords(dragged_id)
         if len(coords) == 2 and dragged_id > len(self.buttons):
+            if self.clicked_resizer:
+                return
             for img in self.created_images + self.added_tools:
                 if img.obj == dragged_id:
                     img.delete_drag()
@@ -154,6 +157,9 @@ class Program:
             return images
 
         for obj in serialized:
+            if obj['type'] == 'button':
+                self.added_tools.append(StaticButton(obj['x'], obj['y'], self, read(obj['image'], obj['size']), obj['parent']))
+                self.canvas.itemconfig(obj['parent'], state='hidden')
             if obj['type'] == 'text':
                 self.created_objects.append(Text(obj['x'], obj['y'], self, obj['text'], obj['size'], obj['color'], obj['font']))
             if obj['type'] == 'cloneable':
@@ -195,24 +201,35 @@ class Program:
     def delete_marker(self):
         if self.marker:
             self.canvas.delete(self.marker[0])
-            if self.marker[1] == self.clicked_object:
-                self.clicked_object = None
             self.marker = None
 
     def clicked_canvas(self, e):
+        curr = self.canvas.find_withtag('current')
+        if curr:
+            for tool in self.added_tools:
+                if tool.obj == curr[0]:
+                    if tool.oid in [12, 13, 14]:
+                        tool.marker()
+                        self.clicked_resizer = True
+                        return
         if self.marker:
             types = {5: self.create_clickable_object, 6: self.create_moveable_object, 7: self.create_cloneable_object,
                      8: self.create_static_object, 12: self.image_resizer, 13: self.flip_horizontally, 14: self.flip_vertically}
             types[self.marker[1]](e)
-            self.delete_marker()
             if len(self.created_images):
                 self.created_images[-1].check_coords()
+            time.sleep(0.1)
+            self.delete_marker()
             return
         for item in self.created_images:
             item.delete_drag()
             if isinstance(item, ClickableObject):
                 item.clicked(e)
                 return
+        self.clicked_resizer = False
+
+    def create_cloneable_object(self):
+        pass
 
     def add_to_table(self, obj=None):
         if obj is not None:
@@ -259,6 +276,9 @@ class Program:
         for obj in self.cloneable_images:
             obj.delete()
         self.cloneable_images = []
+        for button in self.added_tools:
+            button.delete()
+        self.added_tools = []
         for obj in self.created_objects:
             obj.delete()
         self.created_objects = []
@@ -319,12 +339,8 @@ class Program:
 
     def get_serialized_data(self):
         serialized = []
-        for obj in self.created_objects:
+        for obj in self.created_objects + self.created_images + self.cloneable_images + self.added_tools:
             serialized.append(obj.serialize())
-        for img in self.created_images:
-            serialized.append(img.serialize())
-        for img in self.cloneable_images:
-            serialized.append(img.serialize())
         if self.background:
             serialized.append(self.background.serialize())
         return serialized
