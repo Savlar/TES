@@ -1,3 +1,4 @@
+import time
 import tkinter
 
 from background import Background
@@ -27,6 +28,7 @@ class TeacherProgram(Program):
         self.menu = None
         self.table_widget = None
         self.text_widget = None
+        self.coords = None
         self.init()
 
     # TODO rewrite
@@ -66,20 +68,22 @@ class TeacherProgram(Program):
     def click(self, e):
         super(TeacherProgram, self).click(e)
         btn_ids = {1: self.new_exercise, 2: self.save_exercise, 4: self.load_exercise, 5: self.mark, 6: self.mark,
-                   7: self.create_cloneable_object, 8: self.mark, 9: self.create_table_widget,
-                   10: self.create_text_widget, 11: self.create_background}
+                   7: self.create_cloneable_object, 8: self.mark, 9: self.mark,
+                   10: self.mark, 11: self.create_background}
         curr = self.canvas.find_withtag('current')
         if not len(curr) or curr[0] > 11:
             return
         self.clicked_object = curr[0]
         btn_ids[self.clicked_object]()
 
-    def create_table_widget(self):
+    def create_table_widget(self, e):
         if not self.table_widget:
+            self.coords = (e.x, e.y)
             self.table_widget = TableWidget(self)
 
-    def create_text_widget(self):
+    def create_text_widget(self, e):
         if not self.text_widget:
+            self.coords = (e.x, e.y)
             self.text_widget = TextWidget(self)
 
     def create_cloneable_object(self):
@@ -92,8 +96,8 @@ class TeacherProgram(Program):
         if empty:
             self.text_widget = None
             return
-        text = Text(200, 200, self, self.text_widget.text, self.text_widget.default_size.get(), self.text_widget.rgb,
-                    self.text_widget.default_font.get())
+        text = Text(*self.coords, self, self.text_widget.text, self.text_widget.default_size.get(),
+                    self.text_widget.rgb, self.text_widget.default_font.get())
         self.created_objects.append(text)
         self.text_widget = None
 
@@ -104,7 +108,7 @@ class TeacherProgram(Program):
         data = []
         for counter in self.table_widget.counters:
             data.append(counter.value)
-        new_table = Table(self, data, 200, 200, self.table_widget.rgb)
+        new_table = Table(self, data, *self.coords, self.table_widget.rgb)
         new_table.draw_table()
         self.created_objects.append(new_table)
         self.table_widget = None
@@ -117,10 +121,10 @@ class TeacherProgram(Program):
             self.buttons.append(Button(self.images[key][1], x, y, self, left_pct=x/self.width))
             x += 60
             if key == 'load':
-                x += 150
+                x += 300
             if key == 'static':
-                x += 100
-        x = 1040
+                x += 200
+        x = 1240
         y = 100
         for key in list(self.images.keys())[-5:]:
             self.buttons.append(DraggableButton(self.images[key][0], x, y, self))
@@ -144,3 +148,16 @@ class TeacherProgram(Program):
         dragged_id = self.canvas.find_withtag('current')[0]
         if dragged_id in self.canvas.find_withtag('button_clone'):
             self.create_button_clone(dragged_id, e)
+
+    def clicked_canvas(self, e):
+        if self.marker and self.marker[1] < 11:
+            types = {5: self.create_clickable_object, 6: self.create_moveable_object, 7: self.create_cloneable_object,
+                     8: self.create_static_object, 9: self.create_table_widget, 10: self.create_text_widget}
+            # noinspection PyArgumentList
+            types[self.marker[1]](e)
+            if len(self.created_images):
+                self.created_images[-1].check_coords()
+            time.sleep(0.1)
+            self.delete_marker()
+            return
+        super(TeacherProgram, self).clicked_canvas(e)

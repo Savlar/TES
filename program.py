@@ -1,10 +1,10 @@
+import copy
 import pickle
 import time
 import tkinter
 from tkinter import filedialog, messagebox
 from typing import Tuple
 from PIL import Image
-
 from functions import get_images, get_image
 from image_object import StaticObject, ClickableObject, DraggableObject
 from serialize import deserialize_images, deserialize_tables, deserialize_tools, deserialize_text, deserialize_clones, \
@@ -42,7 +42,7 @@ class Program:
 
     def init(self):
         self.initialize_buttons()
-        self.area = self.canvas.create_rectangle(100, 75, 1000, 700, width=5, outline='black', tag='area')
+        self.area = self.canvas.create_rectangle(100, 75, 1200, 694, width=5, outline='black', tag='area')
         self.canvas.update()
 
     def initialize_buttons(self):
@@ -110,15 +110,14 @@ class Program:
             self.width = e.width
             self.height = e.height
             self.canvas.config(width=self.width, height=self.height)
-            # self.canvas.coords(self.area, 100, 75, self.width - 80, self.height - 20)
-            # for image in self.created_images:
-            #     image.rescale(wscale, hscale)
-            self.canvas.scale('all', 0, 0, wscale, hscale)
+            h = ((self.width - 180) / 16) * 9
+            self.canvas.coords(self.area, 100, 75, self.width - 80, h + 75)
+            for image in self.created_images:
+                image.rescale(wscale, hscale)
 
+            # self.canvas.scale('all', 0, 0, wscale, hscale)
             # for i in self.buttons:
             #     i.resize()
-            # print(self.canvas.coords(self.canvas.find_withtag('area')[0]))
-
             # map(lambda x: x.resize, self.buttons)
             self.resizing = False
 
@@ -203,6 +202,17 @@ class Program:
 
     # TODO rewrite
     def clicked_canvas(self, e):
+        if self.marker:
+            types = {12: self.image_resizer, 13: self.flip_horizontally, 14: self.flip_vertically, 15: self.copy,
+                     16: self.delete}
+            # noinspection PyArgumentList
+            types[self.marker[1]](e)
+            if len(self.created_images):
+                self.created_images[-1].check_coords()
+            time.sleep(0.1)
+            self.delete_marker()
+            self.clicked_resizer = False
+            return
         curr = self.canvas.find_withtag('current')
         if curr:
             for tool in self.added_tools:
@@ -211,31 +221,25 @@ class Program:
                         tool.marker()
                         self.clicked_resizer = True
                         return
-        if self.marker:
-            types = {5: self.create_clickable_object, 6: self.create_moveable_object, 7: self.create_cloneable_object,
-                     8: self.create_static_object, 12: self.image_resizer, 13: self.flip_horizontally,
-                     14: self.flip_vertically, 15: self.copy, 16: self.delete}
-            types[self.marker[1]](e)
-            if len(self.created_images):
-                self.created_images[-1].check_coords()
-            time.sleep(0.1)
-            self.delete_marker()
-        else:
-            for item in self.created_images:
-                item.delete_drag()
-                if isinstance(item, ClickableObject):
-                    item.clicked(e)
-                    return
-            self.clicked_resizer = False
-
-    def create_cloneable_object(self):
-        pass
+        for item in self.created_images:
+            item.delete_drag()
+            if isinstance(item, ClickableObject):
+                item.clicked(e)
+                return
+        self.clicked_resizer = False
 
     def copy(self, e):
-        pass
+        for image in reversed(self.created_images):
+            if image.click(e):
+                self.created_images.append(copy.copy(image))
+                return
 
     def delete(self, e):
-        pass
+        for image in reversed(self.created_images):
+            if image.click(e):
+                image.delete()
+                self.created_images.remove(image)
+                return
 
     def add_to_table(self, obj=None):
         if obj is not None:
@@ -349,16 +353,19 @@ class Program:
             self.save_exercise()
 
     def flip_vertically(self, e):
-        for image in self.created_images:
+        for image in reversed(self.created_images):
             if image.click(e):
                 image.flip(True)
+                return
 
     def flip_horizontally(self, e):
-        for image in self.created_images:
+        for image in reversed(self.created_images):
             if image.click(e):
                 image.flip()
+                return
 
     def image_resizer(self, e):
-        for image in self.created_images:
+        for image in reversed(self.created_images):
             if image.click(e):
                 image.draw_drag()
+                return

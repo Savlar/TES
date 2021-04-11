@@ -7,7 +7,7 @@ from constants import DRAG_SIZE
 
 class ImageObject:
 
-    def __init__(self, x: int, y: int, parent, img):
+    def __init__(self, x: int, y: int, parent, img, visible=True):
         self._coords: Tuple[int, int] = (x, y)
         self.parent = parent
         self.canvas = parent.canvas
@@ -15,6 +15,7 @@ class ImageObject:
         self.size = None
         self.index = None
         self.obj = None
+        self.visible = visible
         self.pil_img = img
         self.original = []
         self.drag = []
@@ -25,7 +26,8 @@ class ImageObject:
         self.original = self.pil_img[:]
         self.to_tk_image()
         self.resize(*self.size)
-        self.obj = self.canvas.create_image(*self._coords, image=self.tk_img[0], tag='image')
+        self.obj = self.canvas.create_image(*self._coords, image=self.tk_img[0], tag='image',
+                                            state='hidden' if not self.visible and self.student else 'normal')
         self.canvas.tag_raise(self.obj)
         self.check_coords()
 
@@ -102,8 +104,8 @@ class ImageObject:
         img_bytes = []
         for img in self.pil_img:
             img_bytes.append((img.mode, img.tobytes()))
-        data = {'image': img_bytes, 'size': self.size, 'x': self._coords[0], 'y': self._coords[1]}
-
+        data = {'image': img_bytes, 'size': self.size, 'x': self._coords[0], 'y': self._coords[1],
+                'visible': self.visible}
         return data
 
     def draw_drag(self, redraw=False):
@@ -174,8 +176,8 @@ class ImageObject:
 
 class CloneableObject(ImageObject):
 
-    def __init__(self, x, y, c, img, order):
-        super(CloneableObject, self).__init__(x, y, c, img)
+    def __init__(self, x, y, c, img, order, visible=True):
+        super(CloneableObject, self).__init__(x, y, c, img, visible)
         self.size = (75, 75)
         self.order = order
         self._coords = (50, 120 + 85 * order)
@@ -203,16 +205,16 @@ class CloneableObject(ImageObject):
 
 class ClickableObject(ImageObject):
 
-    def __init__(self, x, y, c, imgs):
-        super(ClickableObject, self).__init__(x, y, c, imgs)
+    def __init__(self, x, y, c, imgs, visible=True):
+        super(ClickableObject, self).__init__(x, y, c, imgs, visible)
         self.index = 0
         self.dragging_mode = False
         self.initialize()
 
     def initialize(self):
+        super(ClickableObject, self).initialize()
         self.index = 0
         self.original = self.pil_img[:]
-        super(ClickableObject, self).initialize()
 
     def delete(self):
         super(ClickableObject, self).delete()
@@ -223,7 +225,8 @@ class ClickableObject(ImageObject):
         return data
 
     def clicked(self, e):
-        if self.dragging_mode: return
+        if self.dragging_mode:
+            return
         width, height = self.pil_img[self.index].size
         w2, h2 = width / 2, height / 2
         x, y = self.canvas.coords(self.obj)
@@ -238,11 +241,15 @@ class ClickableObject(ImageObject):
         if not self.student and self.dragging_mode:
             super(ClickableObject, self).move(x, y)
 
+    def __copy__(self):
+        x, y = self._coords
+        return ClickableObject(x + 30, y + 30, self.parent, self.pil_img[:], self.visible)
+
 
 class StaticObject(ImageObject):
 
-    def __init__(self, x, y, c, img):
-        super(StaticObject, self).__init__(x, y, c, img)
+    def __init__(self, x, y, c, img, visible=True):
+        super(StaticObject, self).__init__(x, y, c, img, visible)
         self.initialize()
 
     def delete(self):
@@ -263,11 +270,15 @@ class StaticObject(ImageObject):
         if not self.student:
             super(StaticObject, self).move(x, y)
 
+    def __copy__(self):
+        x, y = self._coords
+        return StaticObject(x + 30, y + 30, self.parent, self.pil_img[:], self.visible)
+
 
 class StaticButton(ImageObject):
 
-    def __init__(self, x, y, c, img, oid):
-        super(StaticButton, self).__init__(x, y, c, img)
+    def __init__(self, x, y, c, img, oid, visible=True):
+        super(StaticButton, self).__init__(x, y, c, img, visible)
         self.oid = oid
         self.initialize()
 
@@ -296,8 +307,8 @@ class StaticButton(ImageObject):
 
 class DraggableObject(ImageObject):
 
-    def __init__(self, x, y, c, img):
-        super(DraggableObject, self).__init__(x, y, c, img)
+    def __init__(self, x, y, c, img, visible=True):
+        super(DraggableObject, self).__init__(x, y, c, img, visible)
         self.initialize()
 
     def delete(self):
@@ -314,11 +325,15 @@ class DraggableObject(ImageObject):
     def collision(self, e):
         return super(DraggableObject, self).collision(e)
 
+    def __copy__(self):
+        x, y = self._coords
+        return DraggableObject(x + 30, y + 30, self.parent, self.pil_img[:], self.visible)
+
 
 class DraggableButtonImage(ImageObject):
 
-    def __init__(self, x, y, c, img):
-        super(DraggableButtonImage, self).__init__(x, y, c, img)
+    def __init__(self, x, y, c, img, visible=True):
+        super(DraggableButtonImage, self).__init__(x, y, c, img, visible)
         self.size = (img[0].width, img[0].height)
         self._coords = (x, y)
         self.initialize()

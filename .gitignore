@@ -1,4 +1,11 @@
 .idea
+venv
+textures
+test_images
+prirad_pg_obrazok
+images
+vianstrom
+exercises
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

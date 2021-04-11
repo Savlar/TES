@@ -8,7 +8,6 @@ class TableWidget:
 
     def __init__(self, parent, row_count=1, col_count=1):
         self.parent = parent
-
         master = tkinter.Tk()
         master.protocol('WM_DELETE_WINDOW', self.on_close)
         x, y = parent.canvas.winfo_rootx(), parent.canvas.winfo_rooty()

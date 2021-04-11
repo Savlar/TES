@@ -28,3 +28,6 @@ class StudentProgram(Program):
             return
         self.clicked_object = curr[0]
         btn_ids[self.clicked_object]()
+
+    def save_exercise(self):
+        pass

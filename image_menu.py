@@ -13,12 +13,13 @@ class ImageMenu:
         self.image = image
         self.menu = Menu(self.parent.canvas, tearoff=0)
         if isinstance(self.image, ClickableObject):
-            label = 'Tahaci mod'
-            label += '' if not self.image.dragging_mode else '     ✓'
+            label = 'Zapnut tahaci mod' if not self.image.dragging_mode else 'Vypnut tahaci mod'
             self.menu.add_command(label=label, command=self.change_mode)
         self.menu.add_command(label='Zmen obrazok', command=self.change_image)
         if not bg:
             self.menu.add_command(label='Zmen velkost', command=self.change_size)
+        label = 'Skryt obrazok pre ziaka' if self.image.visible else 'Zobrazit obrazok pre ziaka'
+        self.menu.add_command(label=label, command=self.change_visibility)
         self.menu.add_command(label='Vymaz', command=self.remove)
 
     def delete(self):
@@ -41,6 +42,9 @@ class ImageMenu:
 
     def change_mode(self):
         self.image.dragging_mode = not self.image.dragging_mode
+
+    def change_visibility(self):
+        self.image.visible = not self.image.visible
 
     def change_image(self):
         if isinstance(self.image, ClickableObject):
