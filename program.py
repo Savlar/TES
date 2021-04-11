@@ -5,11 +5,11 @@ from tkinter import filedialog, messagebox
 from typing import Tuple
 from PIL import Image
 
-from background import Background
 from functions import get_images, get_image
-from image_object import StaticObject, ClickableObject, DraggableObject, CloneableObject, StaticButton
+from image_object import StaticObject, ClickableObject, DraggableObject
+from serialize import deserialize_images, deserialize_tables, deserialize_tools, deserialize_text, deserialize_clones, \
+    deserialize_background
 from table import Table
-from text import Text
 
 
 class Program:
@@ -39,8 +39,6 @@ class Program:
         self.clicked_resizer = False
         self.serialized_data = []
         self.area = None
-        self.table_widget = None
-        self.text_widget = None
 
     def init(self):
         self.initialize_buttons()
@@ -49,6 +47,36 @@ class Program:
 
     def initialize_buttons(self):
         pass
+
+    def moved_image(self, e, dragged_id):
+        img = next(filter(lambda x: x.obj == dragged_id, self.created_images), None)
+        if img:
+            if not self.clicked_resizer:
+                img.delete_drag()
+                img.move(e.x, e.y)
+            return True
+        return False
+
+    def moved_tool(self, e, dragged_id):
+        tool = next(filter(lambda x: x.obj == dragged_id, self.added_tools), None)
+        if tool:
+            if not (self.clicked_resizer and abs(tool._coords[0] - e.x) < 15 and abs(tool._coords[1] - e.y) < 15):
+                tool.move(e.x, e.y)
+            return True
+        return False
+
+    def moved_table(self, e, dragged_id):
+        for obj in self.created_objects:
+            if isinstance(obj, Table) and obj.drag == dragged_id:
+                obj.move_table(e.x, e.y)
+                return True
+        return False
+
+    def resize_image(self, e, dragged_id):
+        for image in self.created_images:
+            if dragged_id in image.drag:
+                self.dragging = dragged_id
+                image.drag_resize(e.x, e.y, dragged_id)
 
     def drag(self, e):
         curr: Tuple = self.canvas.find_withtag('current')
@@ -61,25 +89,18 @@ class Program:
             return
         coords = self.canvas.coords(dragged_id)
         if len(coords) == 2 and dragged_id > len(self.buttons):
-            if self.clicked_resizer:
+            if self.moved_image(e, dragged_id):
                 return
-            for img in self.created_images + self.added_tools:
-                if img.obj == dragged_id:
-                    img.delete_drag()
-                    img.move(e.x, e.y)
+            if self.moved_tool(e, dragged_id):
+                return
             for x in self.created_objects:
                 if x.obj == dragged_id:
                     x.move(e.x, e.y)
             self.dragging = dragged_id
         else:
-            for obj in self.created_objects:
-                if isinstance(obj, Table) and obj.drag == dragged_id:
-                    obj.move_table(e.x, e.y)
-                    return
-            for image in self.created_images:
-                if dragged_id in image.drag:
-                    self.dragging = dragged_id
-                    image.drag_resize(e.x, e.y, dragged_id)
+            if self.moved_table(e, dragged_id):
+                return
+            self.resize_image(e, dragged_id)
 
     def on_resize(self, e):
         if not self.resizing:
@@ -131,7 +152,6 @@ class Program:
             self.ask_save()
         self.delete_all()
 
-    # TODO rewrite
     def load_exercise(self):
         if self.serialized_data != self.get_serialized_data():
             self.ask_save()
@@ -144,42 +164,18 @@ class Program:
             serialized = pickle.load(read)
         self.delete_all()
         self.serialized_data = serialized
-        for obj in serialized:
-            if obj['type'] == 'table':
-                table = Table(self, obj['data'], obj['x'], obj['y'], obj['color'])
-                table.draw_table()
-                self.created_objects.append(table)
-        def read(data, size):
-            images = []
-            for item in data:
-                mode, img = item
-                images.append(Image.frombytes(mode, size, img))
-            return images
+        self.deserialize()
 
-        for obj in serialized:
-            if obj['type'] == 'button':
-                self.added_tools.append(StaticButton(obj['x'], obj['y'], self, read(obj['image'], obj['size']), obj['parent']))
-                self.canvas.itemconfig(obj['parent'], state='hidden')
-            if obj['type'] == 'text':
-                self.created_objects.append(Text(obj['x'], obj['y'], self, obj['text'], obj['size'], obj['color'], obj['font']))
-            if obj['type'] == 'cloneable':
-                self.cloneable_images.append(
-                    CloneableObject(0, 0, self, read(obj['image'], obj['size']), obj['order']))
-            if obj['type'] == 'background':
-                self.background = Background(read(obj['image'], obj['size']), self)
-                self.lower_bg()
-            if obj['type'] == 'static':
-                self.created_images.append(
-                    StaticObject(obj['x'], obj['y'], self, read(obj['image'], obj['size'])))
-                self.add_to_table(self.created_images[-1])
-            if obj['type'] == 'clickable':
-
-                self.created_images.append(ClickableObject(obj['x'], obj['y'], self, read(obj['image'], obj['size'])))
-                self.add_to_table(self.created_images[-1])
-            if obj['type'] == 'draggable':
-                self.created_images.append(
-                    DraggableObject(obj['x'], obj['y'], self, read(obj['image'], obj['size'])))
-                self.add_to_table(self.created_images[-1])
+    def deserialize(self):
+        self.created_objects = deserialize_tables(self)
+        self.created_images = deserialize_images(self)
+        for image in self.created_images:
+            self.add_to_table(image)
+        self.added_tools = deserialize_tools(self)
+        self.created_objects.extend(deserialize_text(self))
+        self.cloneable_images = deserialize_clones(self)
+        self.background = deserialize_background(self)
+        self.lower_bg()
 
     def save_exercise(self):
         filename = filedialog.asksaveasfile('wb', filetypes=[('Rozpracovane riesenie', '*.pickle')],
@@ -203,18 +199,20 @@ class Program:
             self.canvas.delete(self.marker[0])
             self.marker = None
 
+    # TODO rewrite
     def clicked_canvas(self, e):
         curr = self.canvas.find_withtag('current')
         if curr:
             for tool in self.added_tools:
                 if tool.obj == curr[0]:
-                    if tool.oid in [12, 13, 14]:
+                    if tool.oid in [12, 13, 14, 15, 16]:
                         tool.marker()
                         self.clicked_resizer = True
                         return
         if self.marker:
             types = {5: self.create_clickable_object, 6: self.create_moveable_object, 7: self.create_cloneable_object,
-                     8: self.create_static_object, 12: self.image_resizer, 13: self.flip_horizontally, 14: self.flip_vertically}
+                     8: self.create_static_object, 12: self.image_resizer, 13: self.flip_horizontally, 14: self.flip_vertically,
+                     15: self.copy, 16: self.delete}
             types[self.marker[1]](e)
             if len(self.created_images):
                 self.created_images[-1].check_coords()
@@ -229,6 +227,12 @@ class Program:
         self.clicked_resizer = False
 
     def create_cloneable_object(self):
+        pass
+
+    def copy(self, e):
+        pass
+
+    def delete(self, e):
         pass
 
     def add_to_table(self, obj=None):
@@ -258,13 +262,15 @@ class Program:
             self.add_to_table(obj)
 
     def set_image_coords(self, img, coords):
+        for obj in self.created_images:
+            if img == obj:
+                img._coords = coords
         # if not self.in_collision(coords, img):
-        if True:
-            for obj in self.created_images:
-                if img == obj:
-                    img._coords = coords
-        else:
-            self.canvas.coords(img.obj, *img._coords)
+        #     for obj in self.created_images:
+        #         if img == obj:
+        #             img._coords = coords
+        # else:
+        #     self.canvas.coords(img.obj, *img._coords)
 
     def in_collision(self, coords, obj):
         for img in self.created_images:
@@ -273,18 +279,9 @@ class Program:
         return False
 
     def delete_all(self):
-        for obj in self.cloneable_images:
+        for obj in self.cloneable_images + self.added_tools + self.created_objects + self.created_images:
             obj.delete()
-        self.cloneable_images = []
-        for button in self.added_tools:
-            button.delete()
-        self.added_tools = []
-        for obj in self.created_objects:
-            obj.delete()
-        self.created_objects = []
-        for obj in self.created_images:
-            obj.delete()
-        self.created_images = []
+        self.cloneable_images = self.added_tools = self.created_objects = self.created_images = []
         if self.background:
             self.background.delete()
         self.background = None

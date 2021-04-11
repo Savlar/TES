@@ -23,8 +23,10 @@ class TeacherProgram(Program):
         self.canvas.images = self.images = \
             self.create_image_dict('textures/', ['new_task', 'save', 'save_final', 'load', 'clickable',
                                                  'moveable', 'clone', 'static', 'table', 'text', 'background',
-                                                 'enlarge', 'flip_horizontal', 'flip_vertical', 'bin'])
+                                                 'enlarge', 'flip_horizontal', 'flip_vertical', 'copy', 'bin'])
         self.menu = None
+        self.table_widget = None
+        self.text_widget = None
         self.init()
 
     # TODO rewrite
@@ -110,7 +112,7 @@ class TeacherProgram(Program):
     def initialize_buttons(self):
         x = 30
         y = 33
-        for key in list(self.images.keys())[:-4]:
+        for key in list(self.images.keys())[:-5]:
             self.buttons.append(Button(self.images[key][1], x, y, self, left_pct=x/self.width))
             x += 60
             if key == 'load':
@@ -119,7 +121,7 @@ class TeacherProgram(Program):
                 x += 100
         x = 1040
         y = 100
-        for key in list(self.images.keys())[-4:]:
+        for key in list(self.images.keys())[-5:]:
             self.buttons.append(DraggableButton(self.images[key][0], x, y, self, left_pct=x / self.width))
             y += 70
 
