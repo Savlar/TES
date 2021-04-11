@@ -1,4 +1,3 @@
-import tkinter
 from tkinter.font import Font
 
 
@@ -33,4 +32,5 @@ class Text:
         self.canvas.delete(self.obj)
 
     def serialize(self):
-        return {'type': 'text', 'x': self.x, 'y': self.y, 'color': self.color, 'text': self.text, 'size': self.size, 'font': self.font}
+        return {'type': 'text', 'x': self.x, 'y': self.y, 'color': self.color,
+                'text': self.text, 'size': self.size, 'font': self.font}

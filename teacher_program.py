@@ -4,7 +4,7 @@ from background import Background
 from button import DraggableButton, Button
 from functions import get_image
 from image_menu import ImageMenu
-from image_object import CloneableObject, StaticObject, StaticButton
+from image_object import CloneableObject, StaticButton
 from program import Program
 from table import Table
 from table_menu import TableMenu
@@ -92,7 +92,8 @@ class TeacherProgram(Program):
         if empty:
             self.text_widget = None
             return
-        text = Text(200, 200, self, self.text_widget.text, self.text_widget.default_size.get(), self.text_widget.rgb, self.text_widget.default_font.get())
+        text = Text(200, 200, self, self.text_widget.text, self.text_widget.default_size.get(), self.text_widget.rgb,
+                    self.text_widget.default_font.get())
         self.created_objects.append(text)
         self.text_widget = None
 
@@ -122,7 +123,7 @@ class TeacherProgram(Program):
         x = 1040
         y = 100
         for key in list(self.images.keys())[-5:]:
-            self.buttons.append(DraggableButton(self.images[key][0], x, y, self, left_pct=x / self.width))
+            self.buttons.append(DraggableButton(self.images[key][0], x, y, self))
             y += 70
 
     def create_button_clone(self, oid, e):

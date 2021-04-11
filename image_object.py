@@ -1,4 +1,3 @@
-import tkinter
 from typing import Tuple
 
 from PIL import ImageTk, Image
@@ -9,7 +8,7 @@ from constants import DRAG_SIZE
 class ImageObject:
 
     def __init__(self, x: int, y: int, parent, img):
-        self._coords: Tuple[int,int] = (x, y)
+        self._coords: Tuple[int, int] = (x, y)
         self.parent = parent
         self.canvas = parent.canvas
         self.student = self.parent.student
@@ -70,7 +69,8 @@ class ImageObject:
     def flip(self, vertically=False):
         self.delete()
         for i in range(len(self.pil_img)):
-            self.pil_img[i] = self.pil_img[i].transpose(method=Image.FLIP_TOP_BOTTOM if vertically else Image.FLIP_LEFT_RIGHT)
+            self.pil_img[i] = self.pil_img[i].transpose(
+                method=Image.FLIP_TOP_BOTTOM if vertically else Image.FLIP_LEFT_RIGHT)
         self.initialize()
 
     def collision(self, e):
@@ -121,7 +121,8 @@ class ImageObject:
             if redraw:
                 self.canvas.coords(self.drag[i], *size)
             else:
-                self.drag.append(self.canvas.create_rectangle(*size, tag='img_drag', fill='coral1', width=2, outline='red'))
+                self.drag.append(self.canvas.create_rectangle(
+                    *size, tag='img_drag', fill='coral1', width=2, outline='red'))
 
     def drag_resize(self, x, y, drag_id):
         curr_x, curr_y = self._coords
@@ -205,6 +206,7 @@ class ClickableObject(ImageObject):
     def __init__(self, x, y, c, imgs):
         super(ClickableObject, self).__init__(x, y, c, imgs)
         self.index = 0
+        self.dragging_mode = False
         self.initialize()
 
     def initialize(self):
@@ -221,6 +223,7 @@ class ClickableObject(ImageObject):
         return data
 
     def clicked(self, e):
+        if self.dragging_mode: return
         width, height = self.pil_img[self.index].size
         w2, h2 = width / 2, height / 2
         x, y = self.canvas.coords(self.obj)
@@ -232,7 +235,7 @@ class ClickableObject(ImageObject):
         return super(ClickableObject, self).collision(e)
 
     def move(self, x, y):
-        if not self.student:
+        if not self.student and self.dragging_mode:
             super(ClickableObject, self).move(x, y)
 
 
@@ -287,7 +290,8 @@ class StaticButton(ImageObject):
         self.parent.delete_marker()
         w, h = self.size
         x, y = self._coords
-        self.parent.marker = (self.canvas.create_rectangle(x - w / 2, y - w / 2, x + w / 2, y + h / 2, outline='red', width=4), self.oid)
+        self.parent.marker = (self.canvas.create_rectangle(
+            x - w / 2, y - w / 2, x + w / 2, y + h / 2, outline='red', width=4), self.oid)
 
 
 class DraggableObject(ImageObject):

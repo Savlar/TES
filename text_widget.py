@@ -1,4 +1,3 @@
-import random
 import tkinter
 from tkinter import colorchooser, font
 

@@ -60,7 +60,7 @@ class Program:
     def moved_tool(self, e, dragged_id):
         tool = next(filter(lambda x: x.obj == dragged_id, self.added_tools), None)
         if tool:
-            if not (self.clicked_resizer and abs(tool._coords[0] - e.x) < 15 and abs(tool._coords[1] - e.y) < 15):
+            if not (self.clicked_resizer and abs(tool._coords[0] - e.x) < 5 and abs(tool._coords[1] - e.y) < 5):
                 tool.move(e.x, e.y)
             return True
         return False
@@ -123,7 +123,8 @@ class Program:
             self.resizing = False
 
     def click(self, e):
-        if self.canvas.find_withtag('current') and self.canvas.find_withtag('current')[0] in self.canvas.find_withtag('img_drag'):
+        if self.canvas.find_withtag('current') and \
+                self.canvas.find_withtag('current')[0] in self.canvas.find_withtag('img_drag'):
             return
         x1, y1, x2, y2 = self.canvas.coords(self.canvas.find_withtag('area')[0])
         if x1 <= e.x <= x2 and y1 <= e.y <= y2:
@@ -155,8 +156,8 @@ class Program:
     def load_exercise(self):
         if self.serialized_data != self.get_serialized_data():
             self.ask_save()
-        path = filedialog.askopenfilename(filetypes=[('Rozpracovane riesenie',
-                                                   '*.pickle')], defaultextension='*.pickle', initialdir='./exercises')
+        path = filedialog.askopenfilename(
+            filetypes=[('Rozpracovane riesenie', '*.pickle')], defaultextension='*.pickle', initialdir='./exercises')
         if not path:
             return
         self.path = path[path.rindex('/') + 1:]
@@ -178,8 +179,9 @@ class Program:
         self.lower_bg()
 
     def save_exercise(self):
-        filename = filedialog.asksaveasfile('wb', filetypes=[('Rozpracovane riesenie', '*.pickle')],
-                                            defaultextension='*.pickle', initialdir='./exercises', initialfile=self.path)
+        filename = filedialog.asksaveasfile(
+            'wb', filetypes=[('Rozpracovane riesenie', '*.pickle')], defaultextension='*.pickle',
+            initialdir='./exercises', initialfile=self.path)
         if filename is not None and not isinstance(filename, tuple):
             self.serialized_data = self.get_serialized_data()
             self.path = filename.name[:filename.name.rindex('/')]
@@ -211,20 +213,20 @@ class Program:
                         return
         if self.marker:
             types = {5: self.create_clickable_object, 6: self.create_moveable_object, 7: self.create_cloneable_object,
-                     8: self.create_static_object, 12: self.image_resizer, 13: self.flip_horizontally, 14: self.flip_vertically,
-                     15: self.copy, 16: self.delete}
+                     8: self.create_static_object, 12: self.image_resizer, 13: self.flip_horizontally,
+                     14: self.flip_vertically, 15: self.copy, 16: self.delete}
             types[self.marker[1]](e)
             if len(self.created_images):
                 self.created_images[-1].check_coords()
             time.sleep(0.1)
             self.delete_marker()
-            return
-        for item in self.created_images:
-            item.delete_drag()
-            if isinstance(item, ClickableObject):
-                item.clicked(e)
-                return
-        self.clicked_resizer = False
+        else:
+            for item in self.created_images:
+                item.delete_drag()
+                if isinstance(item, ClickableObject):
+                    item.clicked(e)
+                    return
+            self.clicked_resizer = False
 
     def create_cloneable_object(self):
         pass

@@ -13,7 +13,7 @@ def get_image():
 
 def get_images():
     filenames = filedialog.askopenfilenames(title='Vyber obrazok', initialdir='./images',
-                                filetypes=[('Obrazky', '*.jpg')])
+                                            filetypes=[('Obrazky', '*.jpg')])
     if not filenames:
         return
     imgs = []

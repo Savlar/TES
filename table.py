@@ -1,6 +1,3 @@
-import tkinter
-
-
 class Table:
 
     def __init__(self, parent, data, x, y, color):
@@ -20,7 +17,8 @@ class Table:
         for i in range(self.rows):
             x = self.x
             for j in range(self.cols):
-                cell = self.canvas.create_rectangle(x, y, x + self.width, y + self.height, outline='black', fill="#%02x%02x%02x" % self.color)
+                cell = self.canvas.create_rectangle(
+                    x, y, x + self.width, y + self.height, outline='black', fill="#%02x%02x%02x" % self.color)
                 self.table_objects[i].append(cell)
                 x += self.width
             if i == 0 and not self.parent.student:

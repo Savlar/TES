@@ -1,4 +1,4 @@
-from image_object import CloneableObject, DraggableButtonImage
+from image_object import DraggableButtonImage
 
 
 class Button:
@@ -36,5 +36,5 @@ class Button:
 
 class DraggableButton:
 
-    def __init__(self, image, x, y, parent, left_pct=None):
+    def __init__(self, image, x, y, parent):
         self.image = DraggableButtonImage(x, y, parent, [image])

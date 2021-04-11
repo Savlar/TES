@@ -21,4 +21,5 @@ class Background:
         self.canvas.delete(self.obj)
 
     def serialize(self):
-        return {'type': 'background', 'size': self.pil_img[0].size, 'image': [(self.pil_img[0].mode, self.pil_img[0].tobytes())]}
+        return {'type': 'background', 'size': self.pil_img[0].size,
+                'image': [(self.pil_img[0].mode, self.pil_img[0].tobytes())]}

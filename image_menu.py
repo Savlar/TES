@@ -12,6 +12,10 @@ class ImageMenu:
         self.parent = parent
         self.image = image
         self.menu = Menu(self.parent.canvas, tearoff=0)
+        if isinstance(self.image, ClickableObject):
+            label = 'Tahaci mod'
+            label += '' if not self.image.dragging_mode else '     ✓'
+            self.menu.add_command(label=label, command=self.change_mode)
         self.menu.add_command(label='Zmen obrazok', command=self.change_image)
         if not bg:
             self.menu.add_command(label='Zmen velkost', command=self.change_size)
@@ -34,6 +38,9 @@ class ImageMenu:
             self.parent.added_tools.pop(self.parent.added_tools.index(self.image))
         else:
             self.parent.created_images.pop(self.parent.created_images.index(self.image))
+
+    def change_mode(self):
+        self.image.dragging_mode = not self.image.dragging_mode
 
     def change_image(self):
         if isinstance(self.image, ClickableObject):
