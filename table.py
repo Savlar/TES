@@ -4,12 +4,12 @@ class Table:
         self.parent = parent
         self.canvas = parent.canvas
         self.obj = None
-        self.x = x
-        self.y = y
         self.color = color
         self.drag = None
         self.data = data
         self.rows, self.cols, self.width, self.height = data[0], data[1], data[2], data[3]
+        self.x = x - (self.width * self.cols)
+        self.y = y
         self.table_objects = [[] for _ in range(self.rows)]
 
     def draw_table(self):

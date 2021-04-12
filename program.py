@@ -37,6 +37,7 @@ class Program:
         self.clicked_object = None
         self.dragging = None
         self.path = None
+        self.action = False
         self.clicked_resizer = False
         self.serialized_data = []
         self.area = None
@@ -84,7 +85,8 @@ class Program:
         if len(curr) == 0:
             return
         dragged_id = self.canvas.find_withtag('current')[0]
-
+        self.dragging = dragged_id
+        self.canvas.tag_raise(dragged_id)
         if dragged_id in self.canvas.find_withtag('clone'):
             self.create_clone(dragged_id, e)
             return
@@ -131,6 +133,10 @@ class Program:
             self.clicked_canvas(e)
 
     def mouse_up(self, e):
+        if self.action:
+            self.action = False
+            self.delete_marker()
+            self.clicked_resizer = False
         if self.dragging:
             if self.canvas.type(self.dragging) == 'image':
                 self.set_image_coords(self.find_dragged_object(), (e.x, e.y))
@@ -206,13 +212,11 @@ class Program:
         if self.marker:
             types = {12: self.image_resizer, 13: self.flip_horizontally, 14: self.flip_vertically, 15: self.copy,
                      16: self.delete}
+            self.action = True
             # noinspection PyArgumentList
             types[self.marker[1]](e)
             if len(self.created_images):
                 self.created_images[-1].check_coords()
-            time.sleep(0.1)
-            self.delete_marker()
-            self.clicked_resizer = False
             return
         curr = self.canvas.find_withtag('current')
         if curr:

@@ -54,7 +54,7 @@ def deserialize_clones(parent):
 def deserialize_images(parent, student):
     images = []
     for obj in parent.serialized_data:
-        if not obj['visible'] and student:
+        if obj['type'] in ['static', 'clickable', 'draggable'] and not obj['visible'] and student:
             continue
         if obj['type'] == 'static':
             images.append(StaticObject(obj['x'], obj['y'], parent, read(obj['image'], obj['size']), obj['visible']))
