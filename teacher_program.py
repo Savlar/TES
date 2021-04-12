@@ -39,7 +39,7 @@ class TeacherProgram(Program):
             return
         if clicked < 17:
             return
-        for item in self.created_objects:
+        for item in reversed(self.created_objects):
             if isinstance(item, Table) and clicked == item.drag:
                 self.menu = TableMenu(self, item)
                 self.menu.menu.tk_popup(e.x_root, e.y_root)

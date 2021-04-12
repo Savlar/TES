@@ -24,6 +24,7 @@ class Program:
         self.canvas.bind('<Button-1>', self.click)
         self.canvas.bind('<Configure>', self.on_resize)
 
+        self.student = False
         self.resizing = False
         self.canvas.created_images = []
         self.background = None
@@ -168,7 +169,7 @@ class Program:
 
     def deserialize(self):
         self.created_objects = deserialize_tables(self)
-        self.created_images = deserialize_images(self)
+        self.created_images = deserialize_images(self, self.student)
         for image in self.created_images:
             self.add_to_table(image)
         self.added_tools = deserialize_tools(self)
@@ -221,11 +222,12 @@ class Program:
                         tool.marker()
                         self.clicked_resizer = True
                         return
-        for item in self.created_images:
+        for item in reversed(self.created_images):
             item.delete_drag()
             if isinstance(item, ClickableObject):
-                item.clicked(e)
-                return
+                if item.click(e):
+                    item.clicked(e)
+                    return
         self.clicked_resizer = False
 
     def copy(self, e):
@@ -329,7 +331,7 @@ class Program:
     def get_image_by_id(self, id_):
         if self.background and self.background.obj == id_:
             return self.background
-        for image in self.created_images + self.cloneable_images + self.added_tools:
+        for image in reversed(self.created_images + self.cloneable_images + self.added_tools):
             if image.obj == id_:
                 return image
         return

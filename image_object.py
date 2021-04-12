@@ -1,3 +1,4 @@
+import copy
 from typing import Tuple
 
 from PIL import ImageTk, Image
@@ -211,11 +212,6 @@ class ClickableObject(ImageObject):
         self.dragging_mode = False
         self.initialize()
 
-    def initialize(self):
-        super(ClickableObject, self).initialize()
-        self.index = 0
-        self.original = self.pil_img[:]
-
     def delete(self):
         super(ClickableObject, self).delete()
 
@@ -227,12 +223,8 @@ class ClickableObject(ImageObject):
     def clicked(self, e):
         if self.dragging_mode:
             return
-        width, height = self.pil_img[self.index].size
-        w2, h2 = width / 2, height / 2
-        x, y = self.canvas.coords(self.obj)
-        if (x - w2) <= e.x <= (x + w2) and (y - h2) <= e.y <= (y + h2):
-            self.index = self.index + 1 if self.index + 1 < len(self.tk_img) else 0
-            self.canvas.itemconfig(self.obj, image=self.tk_img[self.index])
+        self.index = self.index + 1 if self.index + 1 < len(self.tk_img) else 0
+        self.canvas.itemconfig(self.obj, image=self.tk_img[self.index])
 
     def collision(self, e):
         return super(ClickableObject, self).collision(e)

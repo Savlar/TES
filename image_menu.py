@@ -18,8 +18,8 @@ class ImageMenu:
         self.menu.add_command(label='Zmen obrazok', command=self.change_image)
         if not bg:
             self.menu.add_command(label='Zmen velkost', command=self.change_size)
-        label = 'Skryt obrazok pre ziaka' if self.image.visible else 'Zobrazit obrazok pre ziaka'
-        self.menu.add_command(label=label, command=self.change_visibility)
+            label = 'Skryt obrazok pre ziaka' if self.image.visible else 'Zobrazit obrazok pre ziaka'
+            self.menu.add_command(label=label, command=self.change_visibility)
         self.menu.add_command(label='Vymaz', command=self.remove)
 
     def delete(self):
