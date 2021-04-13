@@ -1,4 +1,3 @@
-import copy
 from typing import Tuple
 
 from PIL import ImageTk, Image
@@ -16,6 +15,7 @@ class ImageObject:
         self.size = None
         self.index = None
         self.obj = None
+        self.deletable = True
         self.visible = visible
         self.pil_img = img
         self.original = []
@@ -38,8 +38,9 @@ class ImageObject:
             self.tk_img.append(ImageTk.PhotoImage(image))
 
     def delete(self):
-        self.delete_drag()
-        self.canvas.delete(self.obj)
+        if self.deletable:
+            self.delete_drag()
+            self.canvas.delete(self.obj)
 
     def move(self, x, y):
         x1, y1, x2, y2 = self.canvas.coords(self.canvas.find_withtag('area')[0])
@@ -126,6 +127,7 @@ class ImageObject:
             else:
                 self.drag.append(self.canvas.create_rectangle(
                     *size, tag='img_drag', fill='coral1', width=2, outline='red'))
+        self.canvas.tag_raise('img_drag')
 
     def drag_resize(self, x, y, drag_id):
         curr_x, curr_y = self._coords

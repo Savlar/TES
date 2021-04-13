@@ -31,3 +31,8 @@ class StudentProgram(Program):
 
     def save_exercise(self):
         pass
+
+    def load_exercise(self):
+        super(StudentProgram, self).load_exercise()
+        for image in self.created_images:
+            image.deletable = False

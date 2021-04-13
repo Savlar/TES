@@ -1,6 +1,5 @@
 import copy
 import pickle
-import time
 import tkinter
 from tkinter import filedialog, messagebox
 from typing import Tuple
@@ -85,6 +84,8 @@ class Program:
         if len(curr) == 0:
             return
         dragged_id = self.canvas.find_withtag('current')[0]
+        if self.background and dragged_id == self.background.obj:
+            return
         self.dragging = dragged_id
         self.canvas.tag_raise(dragged_id)
         if dragged_id in self.canvas.find_withtag('clone'):
@@ -99,7 +100,6 @@ class Program:
             for x in self.created_objects:
                 if x.obj == dragged_id:
                     x.move(e.x, e.y)
-            self.dragging = dragged_id
         else:
             if self.moved_table(e, dragged_id):
                 return
@@ -174,11 +174,13 @@ class Program:
         self.deserialize()
 
     def deserialize(self):
+        # this MUST be first, no idea why
+        self.added_tools = deserialize_tools(self)
+        
         self.created_objects = deserialize_tables(self)
         self.created_images = deserialize_images(self, self.student)
         for image in self.created_images:
             self.add_to_table(image)
-        self.added_tools = deserialize_tools(self)
         self.created_objects.extend(deserialize_text(self))
         self.cloneable_images = deserialize_clones(self)
         self.background = deserialize_background(self)
@@ -242,8 +244,9 @@ class Program:
 
     def delete(self, e):
         for image in reversed(self.created_images):
-            if image.click(e):
+            if image.click(e) and image.deletable:
                 image.delete()
+                self.remove_from_table(image)
                 self.created_images.remove(image)
                 return
 
@@ -258,8 +261,8 @@ class Program:
             if isinstance(item, Table):
                 item.add_object(dragged_image)
 
-    def remove_from_table(self):
-        dragged_image = self.find_dragged_object()
+    def remove_from_table(self, object_id=None):
+        dragged_image = self.find_dragged_object() if not object_id else object_id
         for item in self.created_objects:
             if isinstance(item, Table):
                 item.remove_object(dragged_image)
@@ -276,7 +279,7 @@ class Program:
     def set_image_coords(self, img, coords):
         for obj in self.created_images:
             if img == obj:
-                img._coords = coords
+                img.move(*coords)
         # if not self.in_collision(coords, img):
         #     for obj in self.created_images:
         #         if img == obj:

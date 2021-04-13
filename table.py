@@ -8,7 +8,10 @@ class Table:
         self.drag = None
         self.data = data
         self.rows, self.cols, self.width, self.height = data[0], data[1], data[2], data[3]
-        self.x = x - (self.width * self.cols)
+        self.x = x
+        x1, y1, x2, y2 = self.canvas.coords(self.canvas.find_withtag('area')[0])
+        if self.x + (self.width * self.cols) > x2:
+            self.x = x - (self.width * self.cols)
         self.y = y
         self.table_objects = [[] for _ in range(self.rows)]
 
