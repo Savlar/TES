@@ -4,7 +4,7 @@ from PIL import Image
 
 
 def get_image():
-    filename = filedialog.askopenfilename(title='Vyber obrazok', initialdir='./vianstrom',
+    filename = filedialog.askopenfilename(title='Vyber obrazok', initialdir='./images',
                                           filetypes=[('Obrazky', '*.png')])
     if not filename:
         return
@@ -12,7 +12,7 @@ def get_image():
 
 
 def get_images():
-    filenames = filedialog.askopenfilenames(title='Vyber obrazok', initialdir='./vianstrom',
+    filenames = filedialog.askopenfilenames(title='Vyber obrazok', initialdir='./images',
                                             filetypes=[('Obrazky', '*.png')])
     if not filenames:
         return

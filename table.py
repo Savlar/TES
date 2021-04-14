@@ -132,3 +132,13 @@ class Table:
 
     def resize_image(self, img):
         img.resize(self.width, self.height)
+
+    def __copy__(self):
+        if not self.parent.student:
+            table = Table(self.parent, self.data, self.x + 30, self.y + 30, self.color)
+            table.draw_table()
+            return table
+
+    def click(self, e):
+        return self.x <= e.x <= self.x + (self.cols * self.width) \
+               and self.y <= e.y <= self.y + (self.rows * self.height)

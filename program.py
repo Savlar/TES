@@ -55,6 +55,7 @@ class Program:
             if not self.clicked_resizer:
                 img.delete_drag()
                 img.move(e.x, e.y)
+            self.dragging = None
             return True
         return False
 
@@ -175,8 +176,8 @@ class Program:
 
     def deserialize(self):
         # this MUST be first, no idea why
-        self.added_tools = deserialize_tools(self)
-        
+        self.added_tools = deserialize_tools(self, self.student)
+
         self.created_objects = deserialize_tables(self)
         self.created_images = deserialize_images(self, self.student)
         for image in self.created_images:
@@ -241,6 +242,9 @@ class Program:
             if image.click(e):
                 self.created_images.append(copy.copy(image))
                 return
+        for obj in reversed(self.created_objects):
+            if obj.click(e):
+                self.created_objects.append(copy.copy(obj))
 
     def delete(self, e):
         for image in reversed(self.created_images):

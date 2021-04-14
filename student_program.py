@@ -36,3 +36,6 @@ class StudentProgram(Program):
         super(StudentProgram, self).load_exercise()
         for image in self.created_images:
             image.deletable = False
+
+    def ask_save(self):
+        return False

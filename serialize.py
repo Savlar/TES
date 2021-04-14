@@ -23,12 +23,13 @@ def deserialize_tables(parent):
     return tables
 
 
-def deserialize_tools(parent):
+def deserialize_tools(parent, student=False):
     tools = []
     for obj in list(filter(lambda x: x['type'] == 'button', parent.serialized_data)):
         tools.append(
             StaticButton(obj['x'], obj['y'], parent, read(obj['image'], obj['size']), obj['parent'], obj['visible']))
-        parent.canvas.itemconfig(obj['parent'], state='hidden')
+        if not student:
+            parent.canvas.itemconfig(obj['parent'], state='hidden')
     return tools
 
 
