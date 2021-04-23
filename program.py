@@ -55,6 +55,7 @@ class Program:
             if not self.clicked_resizer:
                 img.delete_drag()
                 img.move(e.x, e.y)
+                self.remove_from_table(img)
             self.dragging = None
             return True
         return False
@@ -115,14 +116,13 @@ class Program:
             self.height = e.height
             self.canvas.config(width=self.width, height=self.height)
             h = ((self.width - 180) / 16) * 9
+            # self.canvas.scale('all', 0, 0, wscale, hscale)
             self.canvas.coords(self.area, 100, 75, self.width - 80, h + 75)
             for image in self.created_images:
                 image.rescale(wscale, hscale)
 
-            # self.canvas.scale('all', 0, 0, wscale, hscale)
             # for i in self.buttons:
             #     i.resize()
-            # map(lambda x: x.resize, self.buttons)
             self.resizing = False
 
     def click(self, e):

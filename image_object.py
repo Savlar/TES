@@ -68,6 +68,8 @@ class ImageObject:
         new_w = int(w * pct_w)
         new_h = int(h * pct_h)
         self.resize(new_w, new_h)
+        w1, h1, w2, h2 = self.canvas.bbox(self.obj)
+        self._coords = (pct_w * w1 + (w2 - w1) / 2, pct_h * h1 + (h2 - h1) / 2)
         self.check_coords()
 
     def flip(self, vertically=False):
@@ -181,7 +183,6 @@ class CloneableObject(ImageObject):
 
     def __init__(self, x, y, c, img, order, visible=True):
         super(CloneableObject, self).__init__(x, y, c, img, visible)
-        self.size = (75, 75)
         self.order = order
         self._coords = (50, 120 + 85 * order)
         self.initialize()
@@ -189,6 +190,10 @@ class CloneableObject(ImageObject):
     def initialize(self):
         self.order = 0
         self.original = self.pil_img.copy()
+        w, h = self.original[0].size
+        self.size = self.original[0].size
+        if w > 75 or h > 75:
+            self.size = (75, 75)
         self.to_tk_image()
         self.resize(*self.size)
         self.obj = self.canvas.create_image(*self._coords, image=self.tk_img[0], tag='clone')
