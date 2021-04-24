@@ -3,7 +3,7 @@ from typing import Tuple
 
 from PIL import ImageTk, Image
 
-from constants import DRAG_SIZE
+from constants import DRAG_SIZE, CLONE_SIZE, COPY_OFFSET
 
 
 class ImageObject:
@@ -199,8 +199,8 @@ class CloneableObject(ImageObject):
         self.original = self.pil_img.copy()
         w, h = self.original[0].size
         self.size = self.original[0].size
-        if w > 75 or h > 75:
-            self.size = (75, 75)
+        if w > CLONE_SIZE or h > CLONE_SIZE:
+            self.size = (CLONE_SIZE, CLONE_SIZE)
         self.to_tk_image()
         self.resize(*self.size)
         self.obj = self.canvas.create_image(*self._coords, image=self.tk_img[0], tag='clone')
@@ -249,7 +249,7 @@ class ClickableObject(ImageObject):
 
     def __copy__(self):
         x, y = self._coords
-        return ClickableObject(x + 30, y + 30, self.parent, self.pil_img[:], self.visible)
+        return ClickableObject(x + COPY_OFFSET, y + COPY_OFFSET, self.parent, self.pil_img[:], self.visible)
 
 
 class StaticObject(ImageObject):
@@ -278,7 +278,7 @@ class StaticObject(ImageObject):
 
     def __copy__(self):
         x, y = self._coords
-        return StaticObject(x + 30, y + 30, self.parent, self.pil_img[:], self.visible)
+        return StaticObject(x + COPY_OFFSET, y + COPY_OFFSET, self.parent, self.pil_img[:], self.visible)
 
 
 class DraggableObject(ImageObject):
@@ -303,7 +303,7 @@ class DraggableObject(ImageObject):
 
     def __copy__(self):
         x, y = self._coords
-        return DraggableObject(x + 30, y + 30, self.parent, self.pil_img[:], self.visible)
+        return DraggableObject(x + COPY_OFFSET, y + COPY_OFFSET, self.parent, self.pil_img[:], self.visible)
 
 
 class StaticButton(ImageObject):

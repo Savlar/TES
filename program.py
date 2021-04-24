@@ -6,6 +6,8 @@ from typing import Tuple
 from PIL import Image
 
 from button import DraggableButton
+from constants import AREA_X1, AREA_Y1, AREA_X2, AREA_Y2, MARKER_WIDTH, CREATE_BACKGROUND, FLIP_VERTICALLY_TOOL, \
+    RESIZE_TOOL, FLIP_HORIZONTALLY_TOOL, COPY_TOOL, DELETE_TOOL
 from functions import get_images, get_image
 from image_object import StaticObject, ClickableObject, DraggableObject
 from serialize import deserialize_images, deserialize_tables, deserialize_tools, deserialize_text, deserialize_clones, \
@@ -45,7 +47,7 @@ class Program:
 
     def init(self):
         self.initialize_buttons()
-        self.area = self.canvas.create_rectangle(100, 75, 1200, 694, width=5, outline='black', tag='area')
+        self.area = self.canvas.create_rectangle(AREA_X1, AREA_Y1, AREA_X2, AREA_Y2, width=5, outline='black', tag='area')
         self.canvas.update()
 
     def initialize_buttons(self):
@@ -119,7 +121,7 @@ class Program:
             self.canvas.config(width=self.width, height=self.height)
             h = ((self.width - 180) / 16) * 9
             # self.canvas.scale('all', 0, 0, wscale, hscale)
-            self.canvas.coords(self.area, 100, 75, self.width - 80, h + 75)
+            self.canvas.coords(self.area, AREA_X1, AREA_Y1, self.width - 80, h + 75)
             for image in self.created_images:
                 image.rescale(wscale, hscale)
             for tool in self.added_tools:
@@ -218,9 +220,9 @@ class Program:
     def mark(self):
         self.delete_marker()
         x, y = self.canvas.coords(self.clicked_object)
-        w, h = 28, 24
-        if self.clicked_object > 10:
-            w, h = 28, 28
+        w, h = MARKER_WIDTH, MARKER_WIDTH - 4
+        if self.clicked_object > CREATE_BACKGROUND:
+            w, h = MARKER_WIDTH, MARKER_WIDTH
         self.marker = \
             (self.canvas.create_rectangle(x - w, y - h, x + w, y + h, outline='red', width=5), self.clicked_object)
 
@@ -232,8 +234,9 @@ class Program:
     # TODO rewrite
     def clicked_canvas(self, e):
         if self.marker:
-            types = {11: self.image_resizer, 12: self.flip_horizontally, 13: self.flip_vertically, 14: self.copy,
-                     15: self.delete}
+            types = {RESIZE_TOOL: self.image_resizer, FLIP_VERTICALLY_TOOL: self.flip_horizontally,
+                     FLIP_HORIZONTALLY_TOOL: self.flip_vertically, COPY_TOOL: self.copy,
+                     DELETE_TOOL: self.delete}
             self.action = True
             # noinspection PyArgumentList
             types[self.marker[1]](e)
@@ -244,7 +247,7 @@ class Program:
         if curr:
             for tool in self.added_tools:
                 if tool.obj == curr[0]:
-                    if tool.oid in [11, 12, 13, 14, 15]:
+                    if tool.oid in [RESIZE_TOOL, FLIP_VERTICALLY_TOOL, FLIP_HORIZONTALLY_TOOL, COPY_TOOL, DELETE_TOOL]:
                         tool.marker()
                         self.clicked_resizer = True
                         return

@@ -32,6 +32,12 @@ class ImageMenu:
     def change_visibility(self):
         self.image.visible = not self.image.visible
 
+    def delete(self):
+        self.image.delete()
+        for table in self.parent.created_objects:
+            if isinstance(table, Table):
+                table.remove_object(self.image)
+
     def change_image(self):
         if isinstance(self.image, StaticButton):
             file = get_image()
@@ -44,7 +50,7 @@ class ImageMenu:
             files = get_images()
             if not files:
                 return
-            self.delete()
+            self.parent.remove_image()
             self.image.pil_img = files
             self.image.initialize()
         else:

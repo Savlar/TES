@@ -1,3 +1,6 @@
+from constants import COPY_OFFSET
+
+
 class Table:
 
     def __init__(self, parent, data, x, y, color):
@@ -136,7 +139,7 @@ class Table:
 
     def __copy__(self):
         if not self.parent.student:
-            table = Table(self.parent, self.data, self.x + 30, self.y + 30, self.color)
+            table = Table(self.parent, self.data, self.x + COPY_OFFSET, self.y + COPY_OFFSET, self.color)
             table.draw_table()
             return table
 

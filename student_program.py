@@ -1,6 +1,7 @@
 import tkinter
 
 from button import Button
+from constants import BUTTONS_TOP_Y, BUTTONS_TOP_X, BUTTONS_TOP_SPACING, SAVE_EXERCISE_STUDENT, LOAD_EXERCISE_STUDENT
 from program import Program
 
 
@@ -14,17 +15,17 @@ class StudentProgram(Program):
         self.init()
 
     def initialize_buttons(self):
-        x = 30
-        y = 33
+        x = BUTTONS_TOP_X
+        y = BUTTONS_TOP_Y
         for key in list(self.images.keys()):
             self.buttons.append(Button(self.images[key][1], x, y, self, left_pct=x / self.width))
-            x += 60
+            x += BUTTONS_TOP_SPACING
 
     def click(self, e):
         super(StudentProgram, self).click(e)
-        btn_ids = {1: self.save_exercise, 2: self.load_exercise}
+        btn_ids = {SAVE_EXERCISE_STUDENT: self.save_exercise, LOAD_EXERCISE_STUDENT: self.load_exercise}
         curr = self.canvas.find_withtag('current')
-        if not len(curr) or curr[0] > 2:
+        if not len(curr) or curr[0] > LOAD_EXERCISE_STUDENT:
             return
         self.clicked_object = curr[0]
         btn_ids[self.clicked_object]()

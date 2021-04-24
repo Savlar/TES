@@ -10,5 +10,6 @@ class TextMenu:
         self.menu.add_command(label='Vymaz', command=self.delete)
 
     def delete(self):
-        self.text.delete()
-        self.p.created_objects.pop(self.p.created_objects.index(self.text))
+        if self.p.ask_delete():
+            self.text.delete()
+            self.p.created_objects.pop(self.p.created_objects.index(self.text))

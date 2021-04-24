@@ -3,6 +3,9 @@ import tkinter
 
 from background import Background
 from button import DraggableButton, Button
+from constants import CREATE_NEW_EXERCISE, SAVE_EXERCISE_TEACHER, LOAD_EXERCISE_TEACHER, CREATE_CLONE, \
+    CREATE_BACKGROUND, BUTTONS_TOP_X, BUTTONS_TOP_Y, BUTTONS_TOP_SPACING, CLICKABLE_OBJECT, DRAGGABLE_OBJECT, \
+    STATIC_OBJECT, TABLE_OBJECT, TEXT_OBJECT
 from functions import get_image
 from image_menu import ImageMenu
 from image_object import CloneableObject, StaticButton
@@ -67,14 +70,16 @@ class TeacherProgram(Program):
 
     def click(self, e):
         super(TeacherProgram, self).click(e)
-        btn_ids = {1: self.new_exercise, 2: self.save_exercise, 3: self.load_exercise, 4: self.mark, 5: self.mark,
-                   6: self.create_cloneable_object, 7: self.mark, 8: self.mark,
-                   9: self.mark, 10: self.create_background}
+        btn_ids = {CREATE_NEW_EXERCISE: self.new_exercise, SAVE_EXERCISE_TEACHER: self.save_exercise,
+                   LOAD_EXERCISE_TEACHER: self.load_exercise, CLICKABLE_OBJECT: self.mark, DRAGGABLE_OBJECT: self.mark,
+                   CREATE_CLONE: self.create_cloneable_object, STATIC_OBJECT: self.mark, TABLE_OBJECT: self.mark,
+                   TEXT_OBJECT: self.mark, CREATE_BACKGROUND: self.create_background}
         curr = self.canvas.find_withtag('current')
-        if not len(curr) or curr[0] > 10:
+        if not len(curr) or curr[0] > CREATE_BACKGROUND:
             return
         self.clicked_object = curr[0]
-        if self.clicked_object in [1, 2, 3, 6, 10]:
+        if self.clicked_object in [CREATE_NEW_EXERCISE, SAVE_EXERCISE_TEACHER, LOAD_EXERCISE_TEACHER,
+                                   CREATE_CLONE, CREATE_BACKGROUND]:
             self.delete_marker()
         btn_ids[self.clicked_object]()
 
@@ -117,15 +122,15 @@ class TeacherProgram(Program):
         self.snap_to_table()
 
     def initialize_buttons(self):
-        x = 30
-        y = 33
+        x = BUTTONS_TOP_X
+        y = BUTTONS_TOP_Y
         for key in list(self.images.keys())[:-5]:
             self.buttons.append(Button(self.images[key][1], x, y, self, left_pct=x/self.width))
-            x += 60
-            if key == 'load':
-                x += 300
-            if key == 'static':
-                x += 200
+            x += BUTTONS_TOP_SPACING
+            # if key == 'load':
+            #     x += 300
+            # if key == 'static':
+            #     x += 200
         x = 1240
         y = 100
         for key in list(self.images.keys())[-5:]:
@@ -152,9 +157,10 @@ class TeacherProgram(Program):
             self.create_button_clone(dragged_id, e)
 
     def clicked_canvas(self, e):
-        if self.marker and self.marker[1] < 10:
-            types = {4: self.create_clickable_object, 5: self.create_moveable_object, 6: self.create_cloneable_object,
-                     7: self.create_static_object, 8: self.create_table_widget, 9: self.create_text_widget}
+        if self.marker and self.marker[1] < CREATE_BACKGROUND:
+            types = {CLICKABLE_OBJECT: self.create_clickable_object, DRAGGABLE_OBJECT: self.create_moveable_object,
+                     CREATE_CLONE: self.create_cloneable_object, STATIC_OBJECT: self.create_static_object,
+                     TABLE_OBJECT: self.create_table_widget, TEXT_OBJECT: self.create_text_widget}
             # noinspection PyArgumentList
             types[self.marker[1]](e)
             if len(self.created_images):
