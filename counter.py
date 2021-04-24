@@ -12,9 +12,9 @@ class Counter:
 
         self.label = tkinter.Label(parent, text=str(self.value))
         self.label.grid(row=row, column=col, rowspan=2)
-        self.btn_up = tkinter.Button(parent, text='+', command=self.increment)
+        self.btn_up = tkinter.Button(parent, text='+', command=self.increment, width=1, height=1)
         self.btn_up.grid(row=row, column=col + 1)
-        self.btn_down = tkinter.Button(parent, text='-', command=self.decrement)
+        self.btn_down = tkinter.Button(parent, text='-', command=self.decrement, width=1, height=1)
         self.btn_down['state'] = 'disabled'
         self.btn_down.grid(row=row + 1, column=col + 1)
 
