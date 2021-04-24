@@ -13,6 +13,6 @@ if __name__ == '__main__':
     win.geometry('%dx%d+%d+%d' % (w, h, x, y))
     canvas = tkinter.Canvas(master=win, height=720, width=1280)
     canvas.pack(expand=tkinter.YES, fill=tkinter.BOTH)
-    # TeacherProgram(canvas, 1280, 720)
-    StudentProgram(canvas, 1280, 720)
+    TeacherProgram(canvas, 1280, 720)
+    # StudentProgram(canvas, 1280, 720)
     win.mainloop()

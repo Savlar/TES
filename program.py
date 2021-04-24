@@ -4,6 +4,8 @@ import tkinter
 from tkinter import filedialog, messagebox
 from typing import Tuple
 from PIL import Image
+
+from button import DraggableButton
 from functions import get_images, get_image
 from image_object import StaticObject, ClickableObject, DraggableObject
 from serialize import deserialize_images, deserialize_tables, deserialize_tools, deserialize_text, deserialize_clones, \
@@ -86,7 +88,7 @@ class Program:
         if len(curr) == 0:
             return
         dragged_id = self.canvas.find_withtag('current')[0]
-        if self.background and dragged_id == self.background.obj:
+        if self.background and dragged_id == self.background.obj or dragged_id < len(self.buttons) + 1:
             return
         self.dragging = dragged_id
         self.canvas.tag_raise(dragged_id)
@@ -120,9 +122,11 @@ class Program:
             self.canvas.coords(self.area, 100, 75, self.width - 80, h + 75)
             for image in self.created_images:
                 image.rescale(wscale, hscale)
-
-            # for i in self.buttons:
-            #     i.resize()
+            for tool in self.added_tools:
+                tool.rescale(wscale, hscale, False)
+            for i in self.buttons:
+                if isinstance(i, DraggableButton):
+                    i.image.rescale(wscale, hscale)
             self.resizing = False
 
     def click(self, e):
@@ -132,6 +136,8 @@ class Program:
         x1, y1, x2, y2 = self.canvas.coords(self.canvas.find_withtag('area')[0])
         if x1 <= e.x <= x2 and y1 <= e.y <= y2:
             self.clicked_canvas(e)
+        else:
+            self.delete_marker()
 
     def mouse_up(self, e):
         if self.action:
@@ -187,6 +193,19 @@ class Program:
         self.background = deserialize_background(self)
         self.lower_bg()
 
+    def remove_image(self, image):
+        self.remove_from_table(image.obj)
+        image.delete()
+        if image == self.background:
+            self.background = None
+            return
+        if image in self.cloneable_images:
+            self.cloneable_images.pop(self.cloneable_images.index(image))
+        elif image in self.added_tools:
+            self.added_tools.pop(self.added_tools.index(image))
+        else:
+            self.created_images.pop(self.created_images.index(image))
+
     def save_exercise(self):
         filename = filedialog.asksaveasfile(
             'wb', filetypes=[('Rozpracovane riesenie', '*.pickle')], defaultextension='*.pickle',
@@ -200,7 +219,7 @@ class Program:
         self.delete_marker()
         x, y = self.canvas.coords(self.clicked_object)
         w, h = 28, 24
-        if self.clicked_object > 11:
+        if self.clicked_object > 10:
             w, h = 28, 28
         self.marker = \
             (self.canvas.create_rectangle(x - w, y - h, x + w, y + h, outline='red', width=5), self.clicked_object)
@@ -213,8 +232,8 @@ class Program:
     # TODO rewrite
     def clicked_canvas(self, e):
         if self.marker:
-            types = {12: self.image_resizer, 13: self.flip_horizontally, 14: self.flip_vertically, 15: self.copy,
-                     16: self.delete}
+            types = {11: self.image_resizer, 12: self.flip_horizontally, 13: self.flip_vertically, 14: self.copy,
+                     15: self.delete}
             self.action = True
             # noinspection PyArgumentList
             types[self.marker[1]](e)
@@ -225,7 +244,7 @@ class Program:
         if curr:
             for tool in self.added_tools:
                 if tool.obj == curr[0]:
-                    if tool.oid in [12, 13, 14, 15, 16]:
+                    if tool.oid in [11, 12, 13, 14, 15]:
                         tool.marker()
                         self.clicked_resizer = True
                         return
@@ -248,10 +267,8 @@ class Program:
 
     def delete(self, e):
         for image in reversed(self.created_images):
-            if image.click(e) and image.deletable:
-                image.delete()
-                self.remove_from_table(image)
-                self.created_images.remove(image)
+            if image.click(e) and image.deletable and self.ask_delete():
+                self.remove_image(image)
                 return
 
     def add_to_table(self, obj=None):
@@ -364,6 +381,9 @@ class Program:
     def ask_save(self):
         if messagebox.askyesno(title='Alert', message='Chces ulozit zadanie?'):
             self.save_exercise()
+
+    def ask_delete(self):
+        return messagebox.askyesno(title='Alert', message='Chces vymazat objekt?')
 
     def flip_vertically(self, e):
         for image in reversed(self.created_images):

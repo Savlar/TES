@@ -10,5 +10,6 @@ class TableMenu:
         self.menu.add_command(label='Vymaz', command=self.delete)
 
     def delete(self):
-        self.table.delete(self.p.created_images)
-        self.p.created_objects.pop(self.p.created_objects.index(self.table))
+        if self.p.ask_delete():
+            self.table.delete(self.p.created_images)
+            self.p.created_objects.pop(self.p.created_objects.index(self.table))

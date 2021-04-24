@@ -1,3 +1,4 @@
+import _tkinter
 from typing import Tuple
 
 from PIL import ImageTk, Image
@@ -22,15 +23,22 @@ class ImageObject:
         self.drag = []
         self.tk_img = []
 
-    def initialize(self):
+    def initialize(self, reset=False):
         self.size = self.pil_img[0].size
         self.original = self.pil_img[:]
         self.to_tk_image()
         self.resize(*self.size)
-        self.obj = self.canvas.create_image(*self._coords, image=self.tk_img[0], tag='image',
-                                            state='hidden' if not self.visible and self.student else 'normal')
+        if not reset:
+            self.obj = self.canvas.create_image(*self._coords, image=self.tk_img[0], tag='image',
+                                                state='hidden' if not self.visible and self.student else 'normal')
+        else:
+            self.canvas.itemconfig(self.obj, image=self.tk_img[0])
         self.canvas.tag_raise(self.obj)
         self.check_coords()
+
+    def reset(self):
+        self.pil_img = self.original[:]
+        self.initialize(True)
 
     def to_tk_image(self):
         self.tk_img = []
@@ -61,13 +69,12 @@ class ImageObject:
         self.size = self.pil_img[0].size
         self.canvas.itemconfig(self.obj, image=self.tk_img[self.index or 0])
 
-    def rescale(self, pct_w, pct_h):
-        # x, y = self._coords
-        # self._coords = (x * pct_w, y * pct_h)
+    def rescale(self, pct_w, pct_h, resize=True):
         w, h = self.size
         new_w = int(w * pct_w)
         new_h = int(h * pct_h)
-        self.resize(new_w, new_h)
+        if resize:
+            self.resize(new_w, new_h)
         w1, h1, w2, h2 = self.canvas.bbox(self.obj)
         self._coords = (pct_w * w1 + (w2 - w1) / 2, pct_h * h1 + (h2 - h1) / 2)
         self.check_coords()
@@ -187,7 +194,7 @@ class CloneableObject(ImageObject):
         self._coords = (50, 120 + 85 * order)
         self.initialize()
 
-    def initialize(self):
+    def initialize(self, reset=False):
         self.order = 0
         self.original = self.pil_img.copy()
         w, h = self.original[0].size
@@ -274,36 +281,6 @@ class StaticObject(ImageObject):
         return StaticObject(x + 30, y + 30, self.parent, self.pil_img[:], self.visible)
 
 
-class StaticButton(ImageObject):
-
-    def __init__(self, x, y, c, img, oid, visible=True):
-        super(StaticButton, self).__init__(x, y, c, img, visible)
-        self.oid = oid
-        self.initialize()
-
-    def delete(self):
-        self.canvas.itemconfig(self.oid, state='normal')
-        super(StaticButton, self).delete()
-
-    def move(self, x, y):
-        if not self.student:
-            self.parent.delete_marker()
-            super(StaticButton, self).move(x, y)
-
-    def serialize(self):
-        data = super(StaticButton, self).serialize()
-        data['type'] = 'button'
-        data['parent'] = self.oid
-        return data
-
-    def marker(self):
-        self.parent.delete_marker()
-        w, h = self.size
-        x, y = self._coords
-        self.parent.marker = (self.canvas.create_rectangle(
-            x - w / 2, y - w / 2, x + w / 2, y + h / 2, outline='red', width=4), self.oid)
-
-
 class DraggableObject(ImageObject):
 
     def __init__(self, x, y, c, img, visible=True):
@@ -329,6 +306,40 @@ class DraggableObject(ImageObject):
         return DraggableObject(x + 30, y + 30, self.parent, self.pil_img[:], self.visible)
 
 
+class StaticButton(ImageObject):
+
+    def __init__(self, x, y, c, img, oid, visible=True):
+        super(StaticButton, self).__init__(x, y, c, img, visible)
+        self.oid = oid
+        self.initialize()
+
+    def delete(self):
+        self.parent.delete_marker()
+        try:
+            self.canvas.itemconfig(self.oid, state='normal')
+        except _tkinter.TclError:
+            pass
+        super(StaticButton, self).delete()
+
+    def move(self, x, y):
+        if not self.student:
+            self.parent.delete_marker()
+            super(StaticButton, self).move(x, y)
+
+    def serialize(self):
+        data = super(StaticButton, self).serialize()
+        data['type'] = 'button'
+        data['parent'] = self.oid
+        return data
+
+    def marker(self):
+        self.parent.delete_marker()
+        w, h = self.size
+        x, y = self._coords
+        self.parent.marker = (self.canvas.create_rectangle(
+            x - w / 2, y - w / 2, x + w / 2, y + h / 2, outline='red', width=4), self.oid)
+
+
 class DraggableButtonImage(ImageObject):
 
     def __init__(self, x, y, c, img, visible=True):
@@ -337,7 +348,7 @@ class DraggableButtonImage(ImageObject):
         self._coords = (x, y)
         self.initialize()
 
-    def initialize(self):
+    def initialize(self, reset=False):
         self.original = self.pil_img.copy()
         self.to_tk_image()
         self.resize(*self.size)
@@ -346,3 +357,9 @@ class DraggableButtonImage(ImageObject):
 
     def delete(self):
         super(DraggableButtonImage, self).delete()
+
+    def rescale(self, pct_w, pct_h, resize=False):
+        w, h = self.size
+        w1, h1, w2, h2 = self.canvas.coords(self.parent.area)
+        self._coords = (1.01 * w2 + (w / 2), self._coords[1])
+        self.canvas.coords(self.obj, *self._coords)

@@ -1,7 +1,7 @@
 from tkinter import Menu
 
 from functions import get_images, get_image
-from image_object import ClickableObject
+from image_object import ClickableObject, StaticButton
 from image_size import ImageSize
 from table import Table
 
@@ -22,23 +22,9 @@ class ImageMenu:
             self.menu.add_command(label=label, command=self.change_visibility)
         self.menu.add_command(label='Vymaz', command=self.remove)
 
-    def delete(self):
-        self.image.delete()
-        for table in self.parent.created_objects:
-            if isinstance(table, Table):
-                table.remove_object(self.image)
-
     def remove(self):
-        self.delete()
-        if self.image == self.parent.background:
-            self.parent.background = None
-            return
-        if self.image in self.parent.cloneable_images:
-            self.parent.cloneable_images.pop(self.parent.cloneable_images.index(self.image))
-        elif self.image in self.parent.added_tools:
-            self.parent.added_tools.pop(self.parent.added_tools.index(self.image))
-        else:
-            self.parent.created_images.pop(self.parent.created_images.index(self.image))
+        if self.parent.ask_delete():
+            self.parent.remove_image(self.image)
 
     def change_mode(self):
         self.image.dragging_mode = not self.image.dragging_mode
@@ -47,6 +33,13 @@ class ImageMenu:
         self.image.visible = not self.image.visible
 
     def change_image(self):
+        if isinstance(self.image, StaticButton):
+            file = get_image()
+            if not file:
+                return
+            self.image.original = [file]
+            self.image.reset()
+            return
         if isinstance(self.image, ClickableObject):
             files = get_images()
             if not files:

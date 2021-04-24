@@ -30,7 +30,7 @@ class StudentProgram(Program):
         btn_ids[self.clicked_object]()
 
     def save_exercise(self):
-        pass
+        super(StudentProgram, self).save_exercise()
 
     def load_exercise(self):
         super(StudentProgram, self).load_exercise()
