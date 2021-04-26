@@ -47,8 +47,8 @@ class Program:
 
     def init(self):
         self.initialize_buttons()
-        self.area = self.canvas.create_rectangle(AREA_X1, AREA_Y1, AREA_X2, AREA_Y2, width=5, outline='black', tag='area')
-        self.canvas.update()
+        self.area = self.canvas.create_rectangle(AREA_X1, AREA_Y1, AREA_X2, AREA_Y2, width=5,
+                                                 outline='black', fill='white', tag='area')
 
     def initialize_buttons(self):
         pass
@@ -121,6 +121,7 @@ class Program:
             self.canvas.config(width=self.width, height=self.height)
             h = ((self.width - 180) / 16) * 9
             # self.canvas.scale('all', 0, 0, wscale, hscale)
+            print(self.width, self.height)
             self.canvas.coords(self.area, AREA_X1, AREA_Y1, self.width - 80, h + 75)
             for image in self.created_images:
                 image.rescale(wscale, hscale)
@@ -128,7 +129,7 @@ class Program:
                 tool.rescale(wscale, hscale, False)
             for i in self.buttons:
                 if isinstance(i, DraggableButton):
-                    i.image.rescale(wscale, hscale)
+                    i.image.rescale(wscale, hscale, False)
             self.resizing = False
 
     def click(self, e):
@@ -197,16 +198,9 @@ class Program:
 
     def remove_image(self, image):
         self.remove_from_table(image.obj)
-        image.delete()
-        if image == self.background:
-            self.background = None
-            return
-        if image in self.cloneable_images:
-            self.cloneable_images.pop(self.cloneable_images.index(image))
-        elif image in self.added_tools:
-            self.added_tools.pop(self.added_tools.index(image))
-        else:
+        if image in self.created_images:
             self.created_images.pop(self.created_images.index(image))
+        image.delete()
 
     def save_exercise(self):
         filename = filedialog.asksaveasfile(
@@ -349,6 +343,7 @@ class Program:
 
     def lower_bg(self):
         self.canvas.tag_lower('bg')
+        self.canvas.tag_lower('area')
 
     def create_clone(self, oid, e):
         for img in self.cloneable_images:

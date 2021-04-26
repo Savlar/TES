@@ -50,7 +50,7 @@ class ImageMenu:
             files = get_images()
             if not files:
                 return
-            self.parent.remove_image()
+            self.parent.remove_image(self.image)
             self.image.pil_img = files
             self.image.initialize()
         else:

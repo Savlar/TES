@@ -5,7 +5,7 @@ from PIL import Image
 
 def get_image():
     filename = filedialog.askopenfilename(title='Vyber obrazok', initialdir='./images',
-                                          filetypes=[('Obrazky', '*.jpg')])
+                                          filetypes=[('Obrazky', '*.png')])
     if not filename:
         return
     return Image.open(filename)
@@ -13,7 +13,7 @@ def get_image():
 
 def get_images():
     filenames = filedialog.askopenfilenames(title='Vyber obrazok', initialdir='./images',
-                                            filetypes=[('Obrazky', '*.jpg')])
+                                            filetypes=[('Obrazky', '*.png')])
     if not filenames:
         return
     imgs = []

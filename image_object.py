@@ -3,7 +3,7 @@ from typing import Tuple
 
 from PIL import ImageTk, Image
 
-from constants import DRAG_SIZE, CLONE_SIZE, COPY_OFFSET
+from constants import DRAG_SIZE, CLONE_SIZE, COPY_OFFSET, CLONE_X, CLONE_Y
 
 
 class ImageObject:
@@ -191,16 +191,18 @@ class CloneableObject(ImageObject):
     def __init__(self, x, y, c, img, order, visible=True):
         super(CloneableObject, self).__init__(x, y, c, img, visible)
         self.order = order
-        self._coords = (50, 120 + 85 * order)
+        self._coords = (0, )
         self.initialize()
 
     def initialize(self, reset=False):
-        self.order = 0
+        self._coords = (CLONE_X, CLONE_Y + 78 * self.order)
         self.original = self.pil_img.copy()
         w, h = self.original[0].size
         self.size = self.original[0].size
-        if w > CLONE_SIZE or h > CLONE_SIZE:
-            self.size = (CLONE_SIZE, CLONE_SIZE)
+        if w > CLONE_SIZE:
+            self.size = (CLONE_SIZE, int((CLONE_SIZE / w) * h))
+        if self.size[1] > CLONE_SIZE:
+            self.size = (int((CLONE_SIZE / h) * w), CLONE_SIZE)
         self.to_tk_image()
         self.resize(*self.size)
         self.obj = self.canvas.create_image(*self._coords, image=self.tk_img[0], tag='clone')
@@ -361,5 +363,5 @@ class DraggableButtonImage(ImageObject):
     def rescale(self, pct_w, pct_h, resize=False):
         w, h = self.size
         w1, h1, w2, h2 = self.canvas.coords(self.parent.area)
-        self._coords = (1.01 * w2 + (w / 2), self._coords[1])
+        self._coords = (4 + w2 + (w / 2), self._coords[1])
         self.canvas.coords(self.obj, *self._coords)

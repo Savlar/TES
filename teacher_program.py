@@ -5,7 +5,7 @@ from background import Background
 from button import DraggableButton, Button
 from constants import CREATE_NEW_EXERCISE, SAVE_EXERCISE_TEACHER, LOAD_EXERCISE_TEACHER, CREATE_CLONE, \
     CREATE_BACKGROUND, BUTTONS_TOP_X, BUTTONS_TOP_Y, BUTTONS_TOP_SPACING, CLICKABLE_OBJECT, DRAGGABLE_OBJECT, \
-    STATIC_OBJECT, TABLE_OBJECT, TEXT_OBJECT
+    STATIC_OBJECT, TABLE_OBJECT, TEXT_OBJECT, TOOL_X, TOOL_Y
 from functions import get_image
 from image_menu import ImageMenu
 from image_object import CloneableObject, StaticButton
@@ -93,6 +93,25 @@ class TeacherProgram(Program):
             self.coords = (e.x, e.y)
             self.text_widget = TextWidget(self)
 
+    def remove_image(self, image):
+        if image == self.background:
+            image.delete()
+            self.background = None
+            return
+        if image in self.cloneable_images:
+            self.cloneable_images.pop(self.cloneable_images.index(image))
+            self.move_clones(image.order)
+        elif image in self.added_tools:
+            self.added_tools.pop(self.added_tools.index(image))
+        super(TeacherProgram, self).remove_image(image)
+        
+    def move_clones(self, i):
+        for clone in self.cloneable_images:
+            if clone.order > i:
+                clone.order -= 1
+                clone.delete()
+                clone.initialize()
+
     def create_cloneable_object(self):
         image = get_image()
         if not image:
@@ -131,8 +150,8 @@ class TeacherProgram(Program):
             #     x += 300
             # if key == 'static':
             #     x += 200
-        x = 1240
-        y = 100
+        x = TOOL_X
+        y = TOOL_Y
         for key in list(self.images.keys())[-5:]:
             self.buttons.append(DraggableButton(self.images[key][0], x, y, self))
             y += 70
