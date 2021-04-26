@@ -104,7 +104,7 @@ class Table:
                     self.canvas.delete(self.table_objects[ix][iy])
                 self.table_objects[ix][iy] = img
                 self.resize_image(img)
-                self.canvas.tag_lower('bg')
+                self.parent.lower_bg()
                 return
 
     def in_table(self, img):
@@ -126,7 +126,7 @@ class Table:
                                                         outline='black', fill="#%02x%02x%02x" % self.color)
                     self.table_objects[i][j] = cell
                     self.canvas.tag_lower(cell)
-                    self.canvas.tag_lower('bg')
+                    self.parent.lower_bg()
                     return
 
     def put_in_middle(self, ix, iy, img):

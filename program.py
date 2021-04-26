@@ -90,7 +90,8 @@ class Program:
         if len(curr) == 0:
             return
         dragged_id = self.canvas.find_withtag('current')[0]
-        if self.background and dragged_id == self.background.obj or dragged_id < len(self.buttons) + 1:
+        if dragged_id == self.area or self.background and dragged_id == self.background.obj or \
+                dragged_id < len(self.buttons) + 1:
             return
         self.dragging = dragged_id
         self.canvas.tag_raise(dragged_id)
@@ -121,7 +122,6 @@ class Program:
             self.canvas.config(width=self.width, height=self.height)
             h = ((self.width - 180) / 16) * 9
             # self.canvas.scale('all', 0, 0, wscale, hscale)
-            print(self.width, self.height)
             self.canvas.coords(self.area, AREA_X1, AREA_Y1, self.width - 80, h + 75)
             for image in self.created_images:
                 image.rescale(wscale, hscale)
@@ -173,7 +173,7 @@ class Program:
         if self.serialized_data != self.get_serialized_data():
             self.ask_save()
         path = filedialog.askopenfilename(
-            filetypes=[('Rozpracovane riesenie', '*.pickle')], defaultextension='*.pickle', initialdir='./exercises')
+            filetypes=[('Rozpracované riešenie', '*.pickle')], defaultextension='*.pickle', initialdir='./exercises')
         if not path:
             return
         self.path = path[path.rindex('/') + 1:]
@@ -204,7 +204,7 @@ class Program:
 
     def save_exercise(self):
         filename = filedialog.asksaveasfile(
-            'wb', filetypes=[('Rozpracovane riesenie', '*.pickle')], defaultextension='*.pickle',
+            'wb', filetypes=[('Rozpracované riešenie', '*.pickle')], defaultextension='*.pickle',
             initialdir='./exercises', initialfile=self.path)
         if filename is not None and not isinstance(filename, tuple):
             self.serialized_data = self.get_serialized_data()
@@ -377,11 +377,11 @@ class Program:
         return serialized
 
     def ask_save(self):
-        if messagebox.askyesno(title='Alert', message='Chces ulozit zadanie?'):
+        if messagebox.askyesno(title='Alert', message='Chceš uložiť zadanie?'):
             self.save_exercise()
 
     def ask_delete(self):
-        return messagebox.askyesno(title='Alert', message='Chces vymazat objekt?')
+        return messagebox.askyesno(title='Alert', message='Chceš vymazať objekt?')
 
     def flip_vertically(self, e):
         for image in reversed(self.created_images):

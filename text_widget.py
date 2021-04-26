@@ -39,7 +39,7 @@ class TextWidget:
         self.text = ''
 
         tkinter.Button(master, text='Farba', command=self.choose_color, width=5).grid(row=8, column=0)
-        tkinter.Button(master, text='Potvrdit', command=self.confirm, width=5).grid(row=10, column=0)
+        tkinter.Button(master, text='Potvrdiť', command=self.confirm, width=5).grid(row=10, column=0)
 
     def confirm(self):
         self.text = self.entry.get('1.0', tkinter.END)
@@ -47,7 +47,7 @@ class TextWidget:
         self.on_close()
 
     def choose_color(self):
-        color_code = colorchooser.askcolor(title="Zvol farbu")
+        color_code = colorchooser.askcolor(title="Zvoľ farbu")
         self.rgb = tuple(map(int, color_code[0]))
         self.master.attributes('-topmost', True)
 

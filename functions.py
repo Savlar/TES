@@ -4,16 +4,16 @@ from PIL import Image
 
 
 def get_image():
-    filename = filedialog.askopenfilename(title='Vyber obrazok', initialdir='./images',
-                                          filetypes=[('Obrazky', '*.png')])
+    filename = filedialog.askopenfilename(title='Vyber obrázok', initialdir='./images',
+                                          filetypes=[('Obrázky', '*.png')])
     if not filename:
         return
     return Image.open(filename)
 
 
 def get_images():
-    filenames = filedialog.askopenfilenames(title='Vyber obrazok', initialdir='./images',
-                                            filetypes=[('Obrazky', '*.png')])
+    filenames = filedialog.askopenfilenames(title='Vyber obrázky', initialdir='./images',
+                                            filetypes=[('Obrázky', '*.png')])
     if not filenames:
         return
     imgs = []

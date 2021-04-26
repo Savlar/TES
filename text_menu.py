@@ -7,7 +7,7 @@ class TextMenu:
         self.p = parent
         self.text = text
         self.menu = Menu(self.p.canvas, tearoff=0)
-        self.menu.add_command(label='Vymaz', command=self.delete)
+        self.menu.add_command(label='Vymaž', command=self.delete)
 
     def delete(self):
         if self.p.ask_delete():
