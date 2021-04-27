@@ -20,8 +20,9 @@ from text_widget import TextWidget
 
 class TeacherProgram(Program):
 
-    def __init__(self, canvas: tkinter.Canvas, width, height):
+    def __init__(self, canvas: tkinter.Canvas, width, height, win):
         super(TeacherProgram, self).__init__(canvas, width, height)
+        win.wm_title('eÚlohy')
         self.student = False
         self.canvas.bind('<Button-3>', self.right_click)
         self.canvas.images = self.images = \
@@ -143,18 +144,27 @@ class TeacherProgram(Program):
     def initialize_buttons(self):
         x = BUTTONS_TOP_X
         y = BUTTONS_TOP_Y
+        separators = []
         for key in list(self.images.keys())[:-5]:
             self.buttons.append(Button(self.images[key][1], x, y, self, left_pct=x/self.width))
+            if key == 'load':
+                separators.append(x + (BUTTONS_TOP_SPACING / 2))
+                x += 7
+            if key == 'static':
+                separators.append(x + (BUTTONS_TOP_SPACING / 2))
+                x += 7
             x += BUTTONS_TOP_SPACING
-            # if key == 'load':
-            #     x += 300
-            # if key == 'static':
-            #     x += 200
         x = TOOL_X
         y = TOOL_Y
         for key in list(self.images.keys())[-5:]:
             self.buttons.append(DraggableButton(self.images[key][0], x, y, self))
             y += 70
+        self.draw_separators(separators)
+
+    def draw_separators(self, sep):
+        for separator in sep:
+            self.canvas.create_rectangle(separator, BUTTONS_TOP_Y - 35, separator + 5, BUTTONS_TOP_Y + 35,
+                                         outline='blue', fill='blue', tag='separator')
 
     def create_button_clone(self, oid, e):
         for button in self.buttons:

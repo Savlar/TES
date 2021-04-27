@@ -26,8 +26,8 @@ class TableWidget:
         tkinter.Label(master, text='Šírka bunky: ', anchor='w').grid(row=4, column=0, rowspan=2)
         tkinter.Label(master, text='Výška bunky: ', anchor='w').grid(row=6, column=0, rowspan=2)
 
-        self.counters = [Counter(self.master, 0, 1, 1, 10, 1), Counter(self.master, 2, 1, 1, 10, 1),
-                         Counter(self.master, 4, 1, 20, 100, 10), Counter(self.master, 6, 1, 20, 100, 10)]
+        self.counters = [Counter(self.master, 0, 1, 1, 7, 1), Counter(self.master, 2, 1, 1, 10, 1),
+                         Counter(self.master, 4, 1, 20, 100, 10), Counter(self.master, 6, 1, 20, 80, 10)]
 
         tkinter.Button(master, text='Farba', command=self.choose_color, width=10, height=1).\
             grid(row=8, column=0, columnspan=3)

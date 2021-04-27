@@ -7,7 +7,7 @@ from PIL import Image
 
 from button import DraggableButton
 from constants import AREA_X1, AREA_Y1, AREA_X2, AREA_Y2, MARKER_WIDTH, CREATE_BACKGROUND, FLIP_VERTICALLY_TOOL, \
-    RESIZE_TOOL, FLIP_HORIZONTALLY_TOOL, COPY_TOOL, DELETE_TOOL
+    RESIZE_TOOL, FLIP_HORIZONTALLY_TOOL, COPY_TOOL, DELETE_TOOL, WINDOW_WIDTH, WINDOW_HEIGHT
 from functions import get_images, get_image
 from image_object import StaticObject, ClickableObject, DraggableObject
 from serialize import deserialize_images, deserialize_tables, deserialize_tools, deserialize_text, deserialize_clones, \
@@ -113,24 +113,36 @@ class Program:
             self.resize_image(e, dragged_id)
 
     def on_resize(self, e):
+        self.resize(e.width, e.height)
+
+    def resize(self, width, height):
         if not self.resizing:
             self.resizing = True
-            wscale = e.width / self.width
-            hscale = e.height / self.height
-            self.width = e.width
-            self.height = e.height
+            wscale = width / self.width
+            hscale = height / self.height
+            self.width = width
+            self.height = height
             self.canvas.config(width=self.width, height=self.height)
             h = ((self.width - 180) / 16) * 9
             # self.canvas.scale('all', 0, 0, wscale, hscale)
             self.canvas.coords(self.area, AREA_X1, AREA_Y1, self.width - 80, h + 75)
-            for image in self.created_images:
-                image.rescale(wscale, hscale)
-            for tool in self.added_tools:
-                tool.rescale(wscale, hscale, False)
+            self.resize_area(wscale, hscale)
             for i in self.buttons:
                 if isinstance(i, DraggableButton):
                     i.image.rescale(wscale, hscale, False)
             self.resizing = False
+
+    def resize_area(self, wscale, hscale):
+        for image in self.created_images:
+            image.rescale(wscale, hscale)
+        for tool in self.added_tools:
+            tool.rescale(wscale, hscale, False)
+        for table in self.created_objects:
+            if isinstance(table, Table):
+                table.rescale(wscale, hscale)
+                # self.snap_to_table()
+        if self.background:
+            self.background.rescale(wscale, hscale)
 
     def click(self, e):
         if self.canvas.find_withtag('current') and \
@@ -153,6 +165,8 @@ class Program:
                 self.remove_from_table()
                 self.add_to_table()
                 self.dragging = None
+            else:
+                self.snap_to_table()
         else:
             for x in self.created_images:
                 self.add_to_table(x)
@@ -182,6 +196,8 @@ class Program:
         self.delete_all()
         self.serialized_data = serialized
         self.deserialize()
+        if self.width != WINDOW_WIDTH or self.height != WINDOW_HEIGHT:
+            self.resize_area(self.width / WINDOW_WIDTH, self.height / WINDOW_HEIGHT)
 
     def deserialize(self):
         # this MUST be first, no idea why

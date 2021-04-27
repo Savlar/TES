@@ -1,4 +1,4 @@
-from constants import COPY_OFFSET
+from constants import COPY_OFFSET, AREA_X2, AREA_Y2, AREA_X1
 
 
 class Table:
@@ -6,19 +6,22 @@ class Table:
     def __init__(self, parent, data, x, y, color):
         self.parent = parent
         self.canvas = parent.canvas
-        self.obj = None
         self.color = color
         self.drag = None
         self.data = data
         self.rows, self.cols, self.width, self.height = data[0], data[1], data[2], data[3]
         self.x = x
-        x1, y1, x2, y2 = self.canvas.coords(self.canvas.find_withtag('area')[0])
-        if self.x + (self.width * self.cols) > x2:
-            self.x = x - (self.width * self.cols)
         self.y = y
         self.table_objects = [[] for _ in range(self.rows)]
 
+    def check_coords(self):
+        if self.x + (self.width * self.cols) > AREA_X2:
+            self.x = self.x - (self.width * self.cols)
+        if self.y + (self.height * self.rows) > AREA_Y2:
+            self.y = AREA_Y2 - (self.height * self.rows)
+
     def draw_table(self):
+        self.check_coords()
         y = self.y
         for i in range(self.rows):
             x = self.x
@@ -30,6 +33,15 @@ class Table:
             if i == 0 and not self.parent.student:
                 self.drag = self.canvas.create_oval(x - 5, y - 10, x + 10, y + 5, fill='red', outline='red')
             y += self.height
+
+    def rescale(self, wscale, hscale):
+        self.x *= wscale
+        self.y *= hscale
+        self.width *= wscale
+        self.height *= hscale
+        self.delete()
+        self.table_objects = [[] for _ in range(self.rows)]
+        self.draw_table()
 
     def move_table(self, x, y):
         coords = self.canvas.coords(self.drag)
@@ -44,7 +56,6 @@ class Table:
         self.x += diff_x
         self.y += diff_y
         self.canvas.coords(self.drag, (x - width2, y - height2, x + width2, y + height2))
-
         for row in self.table_objects:
             for obj in row:
                 if type(obj) != int:

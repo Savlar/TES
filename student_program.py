@@ -7,8 +7,9 @@ from program import Program
 
 class StudentProgram(Program):
 
-    def __init__(self, canvas: tkinter.Canvas, width, height):
+    def __init__(self, canvas: tkinter.Canvas, width, height, win):
         super(StudentProgram, self).__init__(canvas, width, height)
+        win.wm_title('eZošit')
         self.student = True
         self.canvas.images = self.images = \
             self.create_image_dict('textures/', ['save', 'load'])

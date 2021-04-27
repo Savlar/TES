@@ -60,6 +60,7 @@ class ImageObject:
         self._coords = (x, y)
 
     def resize(self, w, h):
+        w, h = int(w), int(h)
         self.pil_img = self.original[:]
         self.index = 0
         self.to_tk_image()
