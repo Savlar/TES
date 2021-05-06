@@ -19,6 +19,7 @@ class ImageObject:
         self.deletable = True
         self.visible = visible
         self.pil_img = img
+        self.offset = None
         self.original = []
         self.drag = []
         self.tk_img = []
@@ -51,13 +52,17 @@ class ImageObject:
             self.canvas.delete(self.obj)
 
     def move(self, x, y):
+        if not self.offset:
+            self.offset = (x - self._coords[0], self._coords[1] - y)
+            return
         x1, y1, x2, y2 = self.canvas.coords(self.canvas.find_withtag('area')[0])
         w, h = self.size
         w2, h2 = w / 2, h / 2
-        if x - w2 < x1 or x + w2 > x2 or y - h2 < y1 or y + h2 > y2:
+        off_x, off_y = self.offset
+        if (x - off_x) - w2 < x1 or (x - off_x) + w2 > x2 or (y + off_y) - h2 < y1 or (y + off_y) + h2 > y2:
             return
-        self.canvas.coords(self.obj, x, y)
-        self._coords = (x, y)
+        self.canvas.coords(self.obj, x - off_x, y + off_y)
+        self._coords = (x - off_x, y + off_y)
 
     def resize(self, w, h):
         w, h = int(w), int(h)
@@ -270,7 +275,8 @@ class StaticObject(ImageObject):
         return data
 
     def resize(self, w, h):
-        super(StaticObject, self).resize(w, h)
+        if not self.student:
+            super(StaticObject, self).resize(w, h)
 
     def collision(self, e):
         return super(StaticObject, self).collision(e)

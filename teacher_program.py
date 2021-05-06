@@ -198,3 +198,9 @@ class TeacherProgram(Program):
             self.delete_marker()
             return
         super(TeacherProgram, self).clicked_canvas(e)
+
+    def image_resizer(self, e):
+        for image in reversed(self.created_images):
+            if image.click(e):
+                image.draw_drag()
+                return

@@ -17,6 +17,8 @@ class Table:
     def check_coords(self):
         if self.x + (self.width * self.cols) > AREA_X2:
             self.x = self.x - (self.width * self.cols)
+        if self.x < AREA_X1:
+            self.x = AREA_X1
         if self.y + (self.height * self.rows) > AREA_Y2:
             self.y = AREA_Y2 - (self.height * self.rows)
 

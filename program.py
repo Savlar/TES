@@ -169,6 +169,7 @@ class Program:
                 self.snap_to_table()
         else:
             for x in self.created_images:
+                x.offset = None
                 self.add_to_table(x)
 
     @staticmethod
@@ -241,6 +242,9 @@ class Program:
             self.canvas.delete(self.marker[0])
             self.marker = None
 
+    def image_resizer(self, e):
+        pass
+
     # TODO rewrite
     def clicked_canvas(self, e):
         if self.marker:
@@ -282,6 +286,7 @@ class Program:
         for image in reversed(self.created_images):
             if image.click(e) and image.deletable and self.ask_delete():
                 self.remove_image(image)
+                self.delete_marker()
                 return
 
     def add_to_table(self, obj=None):
@@ -314,6 +319,7 @@ class Program:
         for obj in self.created_images:
             if img == obj:
                 img.move(*coords)
+                img.offset = None
         # if not self.in_collision(coords, img):
         #     for obj in self.created_images:
         #         if img == obj:
@@ -401,18 +407,14 @@ class Program:
 
     def flip_vertically(self, e):
         for image in reversed(self.created_images):
-            if image.click(e):
+            if (not self.student or (not isinstance(image, StaticObject) and not isinstance(image, ClickableObject))) \
+                    and image.click(e):
                 image.flip(True)
                 return
 
     def flip_horizontally(self, e):
         for image in reversed(self.created_images):
-            if image.click(e):
+            if (not self.student or (not isinstance(image, StaticObject) and not isinstance(image, ClickableObject))) \
+                    and image.click(e):
                 image.flip()
-                return
-
-    def image_resizer(self, e):
-        for image in reversed(self.created_images):
-            if image.click(e):
-                image.draw_drag()
                 return

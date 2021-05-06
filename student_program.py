@@ -2,6 +2,7 @@ import tkinter
 
 from button import Button
 from constants import BUTTONS_TOP_Y, BUTTONS_TOP_X, BUTTONS_TOP_SPACING, SAVE_EXERCISE_STUDENT, LOAD_EXERCISE_STUDENT
+from image_object import ClickableObject, StaticObject
 from program import Program
 
 
@@ -41,3 +42,9 @@ class StudentProgram(Program):
 
     def ask_save(self):
         return False
+
+    def image_resizer(self, e):
+        for image in reversed(self.created_images):
+            if not isinstance(image, ClickableObject) and not isinstance(image, StaticObject) and image.click(e):
+                image.draw_drag()
+                return
