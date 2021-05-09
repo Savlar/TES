@@ -1,6 +1,7 @@
 import time
 import tkinter
 
+from tkinter import messagebox
 from background import Background
 from button import DraggableButton, Button
 from constants import CREATE_NEW_EXERCISE, SAVE_EXERCISE_TEACHER, LOAD_EXERCISE_TEACHER, CREATE_CLONE, \
@@ -114,6 +115,10 @@ class TeacherProgram(Program):
                 clone.initialize()
 
     def create_cloneable_object(self):
+        for image in self.cloneable_images:
+            if image.order > 6:
+                messagebox.showwarning(title='Klony', message='Bol vytvorený maximálny počet klonovacích objektov')
+                return
         image = get_image()
         if not image:
             return
