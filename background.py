@@ -15,6 +15,14 @@ class Background:
         self.obj = None
         self._coords = ((AREA_X2 - AREA_X1) / 2 + AREA_X1, (AREA_Y2 - AREA_Y1) / 2 + AREA_Y1)
         self.initialize()
+        w, h = self.pil_img[0].size
+        if w > AREA_X2 - AREA_X1:
+            scale = (AREA_X2 - AREA_X1) / w
+            self.resize(AREA_X2 - AREA_X1, scale * h)
+        w, h = self.pil_img[0].size
+        if h > AREA_Y2 - AREA_Y1:
+            scale = (AREA_Y2 - AREA_Y1) / h
+            self.resize(scale * w, AREA_Y2 - AREA_Y1)
 
     def initialize(self):
         self.tk_img = [ImageTk.PhotoImage(self.pil_img[0])]
@@ -23,8 +31,8 @@ class Background:
     def resize(self, w, h):
         w, h = int(w), int(h)
         self.pil_img = self.original[:]
-        self.tk_img = [ImageTk.PhotoImage(self.pil_img[0])]
         self.pil_img[0] = self.pil_img[0].resize((w, h), resample=Image.LANCZOS)
+        self.tk_img = [ImageTk.PhotoImage(self.pil_img[0])]
         self.size = self.pil_img[0].size
         self.canvas.itemconfig(self.obj, image=self.tk_img[0])
         self.canvas.coords(self.obj, self._coords)
