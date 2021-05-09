@@ -135,7 +135,7 @@ class TeacherProgram(Program):
         data = []
         for counter in self.table_widget.counters:
             data.append(counter.value)
-        new_table = Table(self, data, *self.coords, self.table_widget.rgb)
+        new_table = Table(self, data, *self.coords, self.table_widget.rgb_bg, self.table_widget.rgb_table)
         new_table.draw_table()
         self.created_objects.append(new_table)
         self.table_widget = None
@@ -171,6 +171,7 @@ class TeacherProgram(Program):
             if isinstance(button, DraggableButton) and button.image.obj == oid:
                 self.canvas.itemconfig(oid, state='hidden')
                 self.added_tools.append(StaticButton(e.x, e.y, self, button.image.original.copy(), oid))
+                self.added_tools[-1].offset = (0, 0)
                 self.added_tools[-1].check_coords()
                 self.dragging = self.added_tools[-1].obj
                 self.canvas.itemconfig(oid, tag='button_clone')

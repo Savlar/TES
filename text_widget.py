@@ -36,10 +36,15 @@ class TextWidget:
 
         self.entry = ScrolledText(master, width=23, height=10)
         self.entry.grid(row=0, column=0)
-        self.text = ''
+        self.entry.bind('<KeyRelease>', self.text_change)
 
         tkinter.Button(master, text='Farba', command=self.choose_color, width=5).grid(row=8, column=0)
-        tkinter.Button(master, text='Potvrdiť', command=self.confirm, width=5).grid(row=10, column=0)
+        self.confirm_button = tkinter.Button(master, text='Potvrdiť', command=self.confirm, width=5)
+        self.confirm_button.grid(row=10, column=0)
+        self.confirm_button['state'] = 'disabled'
+
+    def text_change(self, e):
+        self.confirm_button['state'] = 'normal' if self.entry.get('1.0', tkinter.END) != '\n' else 'disabled'
 
     def confirm(self):
         self.text = self.entry.get('1.0', tkinter.END)

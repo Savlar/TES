@@ -17,7 +17,7 @@ def read(data, size):
 def deserialize_tables(parent):
     tables = []
     for obj in list(filter(lambda x: x['type'] == 'table', parent.serialized_data)):
-        table = Table(parent, obj['data'], obj['x'], obj['y'], obj['color'])
+        table = Table(parent, obj['data'], obj['x'], obj['y'], obj['color_bg'], obj['color_table'])
         table.draw_table()
         tables.append(table)
     return tables

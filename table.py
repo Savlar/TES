@@ -3,10 +3,11 @@ from constants import COPY_OFFSET, AREA_X2, AREA_Y2, AREA_X1
 
 class Table:
 
-    def __init__(self, parent, data, x, y, color):
+    def __init__(self, parent, data, x, y, color_bg, color_table):
         self.parent = parent
         self.canvas = parent.canvas
-        self.color = color
+        self.color_bg = color_bg
+        self.color_table = color_table
         self.drag = None
         self.data = data
         self.rows, self.cols, self.width, self.height = data[0], data[1], data[2], data[3]
@@ -29,7 +30,8 @@ class Table:
             x = self.x
             for j in range(self.cols):
                 cell = self.canvas.create_rectangle(
-                    x, y, x + self.width, y + self.height, outline='black', fill="#%02x%02x%02x" % self.color)
+                    x, y, x + self.width, y + self.height, outline='#%02x%02x%02x' % self.color_table,
+                    fill='#%02x%02x%02x' % self.color_bg)
                 self.table_objects[i].append(cell)
                 x += self.width
             if i == 0 and not self.parent.student:
@@ -81,7 +83,8 @@ class Table:
                     self.canvas.delete(obj)
 
     def serialize(self):
-        return {'type': 'table', 'data': self.data, 'x': self.x, 'y': self.y, 'color': self.color}
+        return {'type': 'table', 'data': self.data, 'x': self.x, 'y': self.y, 'color_bg': self.color_bg,
+                'color_table': self.color_table}
 
     def add_object(self, img):
         if self.in_table(img):
@@ -136,7 +139,8 @@ class Table:
                     self.table_objects[i][j] = None
                     cell = self.canvas.create_rectangle(j * self.width + self.x, i * self.height + self.y,
                                                         (j + 1) * self.width + self.x, (i + 1) * self.height + self.y,
-                                                        outline='black', fill="#%02x%02x%02x" % self.color)
+                                                        outline='#%02x%02x%02x' % self.color_table,
+                                                        fill='#%02x%02x%02x' % self.color_bg)
                     self.table_objects[i][j] = cell
                     self.canvas.tag_lower(cell)
                     self.parent.lower_bg()
@@ -152,7 +156,8 @@ class Table:
 
     def __copy__(self):
         if not self.parent.student:
-            table = Table(self.parent, self.data, self.x + COPY_OFFSET, self.y + COPY_OFFSET, self.color)
+            table = Table(self.parent, self.data, self.x + COPY_OFFSET, self.y + COPY_OFFSET, self.color_bg,
+                          self.color_table)
             table.draw_table()
             return table
 
