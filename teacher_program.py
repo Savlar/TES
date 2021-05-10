@@ -152,6 +152,10 @@ class TeacherProgram(Program):
         self.table_widget = None
         self.snap_to_table()
 
+    def edit_table(self):
+        table = self.menu.table
+        table.set(self.table_widget.rgb_bg, self.table_widget.rgb_table)
+
     def initialize_buttons(self):
         x = BUTTONS_TOP_X
         y = BUTTONS_TOP_Y

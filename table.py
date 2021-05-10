@@ -38,6 +38,16 @@ class Table:
                 self.drag = self.canvas.create_oval(x - 5, y - 10, x + 10, y + 5, fill='red', outline='red')
             y += self.height
 
+    def set(self, color_bg, color_table):
+        self.color_table = color_table
+        self.color_bg = color_bg
+        for row in self.table_objects:
+            for item in row:
+                if type(item) == int:
+                    self.canvas.itemconfig(item, fill='#%02x%02x%02x' % self.color_bg,
+                                           outline='#%02x%02x%02x' % self.color_table)
+
+
     def rescale(self, wscale, hscale):
         self.x *= wscale
         self.y *= hscale

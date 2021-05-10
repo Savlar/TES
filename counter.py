@@ -3,8 +3,9 @@ import tkinter
 
 class Counter:
 
-    def __init__(self, parent, row, col, min_, max_, step):
+    def __init__(self, parent, row, col, min_, max_, step, edit):
         self.parent = parent
+        self.edit = edit
         self.value = min_
         self.min_ = min_
         self.max_ = max_
@@ -17,6 +18,9 @@ class Counter:
         self.btn_down = tkinter.Button(parent, text='-', command=self.decrement, width=1, height=1)
         self.btn_down['state'] = 'disabled'
         self.btn_down.grid(row=row + 1, column=col + 1)
+        if self.edit:
+            self.btn_up['state'] = 'disabled'
+            self.btn_down['state'] = 'disabled'
 
     def increment(self):
         self.value += self.step
