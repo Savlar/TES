@@ -125,6 +125,11 @@ class TeacherProgram(Program):
             return
         self.cloneable_images.append(CloneableObject(0, 0, self, [image], len(self.cloneable_images)))
 
+    def edit_text(self):
+        text = self.menu.text
+        text.set(self.text_widget.text, self.text_widget.default_size.get(), self.text_widget.rgb,
+                 self.text_widget.default_font.get())
+
     def create_text(self, empty=False):
         if empty:
             self.text_widget = None

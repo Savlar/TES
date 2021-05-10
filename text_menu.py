@@ -1,5 +1,6 @@
 import copy
 from tkinter import Menu
+from text_widget import TextWidget
 
 
 class TextMenu:
@@ -9,7 +10,11 @@ class TextMenu:
         self.text = text
         self.menu = Menu(self.p.canvas, tearoff=0)
         self.menu.add_command(label='Duplikuj', command=self.copy)
+        self.menu.add_command(label='Editovať', command=self.edit)
         self.menu.add_command(label='Vymaž', command=self.delete)
+
+    def edit(self):
+        self.p.text_widget = TextWidget(self.p, self.text.text, self.text.color, self.text.size, self.text.font)
 
     def copy(self):
         self.p.created_objects.append(copy.copy(self.text))

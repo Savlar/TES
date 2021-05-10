@@ -66,11 +66,11 @@ class ImageObject:
         if not self.offset:
             self.offset = (x - self._coords[0], self._coords[1] - y)
             return
-        x1, y1, x2, y2 = self.canvas.coords(self.canvas.find_withtag('area')[0])
         w, h = self.size
         w2, h2 = w / 2, h / 2
         off_x, off_y = self.offset
-        if (x - off_x) - w2 < x1 or (x - off_x) + w2 > x2 or (y + off_y) - h2 < y1 or (y + off_y) + h2 > y2:
+        if (x - off_x) - w2 < AREA_X1 or (x - off_x) + w2 > AREA_X2 \
+                or (y + off_y) - h2 < AREA_Y1 or (y + off_y) + h2 > AREA_Y2:
             return
         self.canvas.coords(self.obj, x - off_x, y + off_y)
         self._coords = (x - off_x, y + off_y)
