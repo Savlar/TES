@@ -9,7 +9,7 @@ from button import DraggableButton
 from constants import AREA_X1, AREA_Y1, AREA_X2, AREA_Y2, MARKER_WIDTH, CREATE_BACKGROUND, FLIP_VERTICALLY_TOOL, \
     RESIZE_TOOL, FLIP_HORIZONTALLY_TOOL, COPY_TOOL, DELETE_TOOL, WINDOW_WIDTH, WINDOW_HEIGHT
 from functions import get_images, get_image
-from image_object import StaticObject, ClickableObject, DraggableObject
+from image_object import StaticObject, ClickableObject, DraggableObject, ImageObject
 from serialize import deserialize_images, deserialize_tables, deserialize_tools, deserialize_text, deserialize_clones, \
     deserialize_background
 from table import Table
@@ -60,6 +60,7 @@ class Program:
                 img.delete_drag()
                 img.move(e.x, e.y)
                 self.remove_from_table(img)
+            # TODO what does this do?
             self.dragging = None
             return True
         return False
@@ -161,6 +162,7 @@ class Program:
             self.clicked_resizer = False
         if self.dragging:
             if self.canvas.type(self.dragging) == 'image':
+                self.canvas.itemconfig(self.dragging, tag='image')
                 self.set_image_coords(self.find_dragged_object(), (e.x, e.y))
                 self.remove_from_table()
                 self.add_to_table()
@@ -214,7 +216,7 @@ class Program:
         self.lower_bg()
 
     def remove_image(self, image):
-        self.remove_from_table(image.obj)
+        self.remove_from_table(image)
         if image in self.created_images:
             self.created_images.pop(self.created_images.index(image))
         image.delete()

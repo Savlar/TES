@@ -19,7 +19,7 @@ class TableWidget:
         self.row_count = row_count
         self.col_count = col_count
         self.rgb_bg = (255, 255, 255)
-        self.rgb_table = (255, 255, 255)
+        self.rgb_table = (0, 0, 0)
 
         # labels
         tkinter.Label(master, text='Počet riadkov: ', anchor='w').grid(row=0, column=0, rowspan=2)

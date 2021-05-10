@@ -7,6 +7,7 @@ from teacher_program import TeacherProgram
 
 if __name__ == '__main__':
     win = tkinter.Tk()
+    win.resizable(0, 0)
     w, h = WINDOW_WIDTH, WINDOW_HEIGHT
     ws, hs = win.winfo_screenwidth(), win.winfo_screenheight()
     x = (ws / 2) - (w / 2)

@@ -152,7 +152,14 @@ class Table:
         self.canvas.coords(img.obj, x, y)
 
     def resize_image(self, img):
-        img.resize(self.width, self.height)
+        w, h = img.size
+        if w > self.width:
+            scale = self.width / w
+            img.resize(scale * w, scale * h)
+        w, h = img.size
+        if h > self.height:
+            scale = self.height / h
+            img.resize(scale * w, scale * h)
 
     def __copy__(self):
         if not self.parent.student:

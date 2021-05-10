@@ -33,10 +33,7 @@ class ImageMenu:
         self.image.visible = not self.image.visible
 
     def delete(self):
-        self.image.delete()
-        for table in self.parent.created_objects:
-            if isinstance(table, Table):
-                table.remove_object(self.image)
+        self.parent.remove_image(self.image)
 
     def change_image(self):
         if isinstance(self.image, StaticButton):
