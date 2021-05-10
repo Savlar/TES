@@ -222,7 +222,10 @@ class CloneableObject(ImageObject):
             self.size = (int((CLONE_SIZE / h) * w), CLONE_SIZE)
         self.to_tk_image()
         self.resize(*self.size)
-        self.obj = self.canvas.create_image(*self._coords, image=self.tk_img[0], tag='clone')
+        if not reset:
+            self.obj = self.canvas.create_image(*self._coords, image=self.tk_img[0], tag='clone')
+        else:
+            self.canvas.itemconfig(self.obj, image=self.tk_img[0], tag='clone')
         self.canvas.tag_raise(self.obj)
 
     def delete(self):

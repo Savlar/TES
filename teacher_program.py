@@ -103,6 +103,7 @@ class TeacherProgram(Program):
         if image in self.cloneable_images:
             self.cloneable_images.pop(self.cloneable_images.index(image))
             self.move_clones(image.order)
+            image.delete()
         elif image in self.added_tools:
             self.added_tools.pop(self.added_tools.index(image))
         super(TeacherProgram, self).remove_image(image)

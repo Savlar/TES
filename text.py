@@ -1,5 +1,7 @@
 from tkinter.font import Font
 
+from constants import COPY_OFFSET
+
 
 class Text:
 
@@ -27,6 +29,12 @@ class Text:
         self.canvas.coords(self.obj, x, y)
         self.x = x
         self.y = y
+
+    def __copy__(self):
+        if not self.parent.student:
+            text = Text(self.x + COPY_OFFSET, self.y + COPY_OFFSET, self.parent, self.text, self.size,
+                        self.color, self.font)
+            return text
 
     def delete(self):
         self.canvas.delete(self.obj)
