@@ -119,9 +119,9 @@ class ImageObject:
 
     def serialize(self):
         img_bytes = []
-        for img in self.pil_img:
+        for img in self.original:
             img_bytes.append((img.mode, img.tobytes()))
-        data = {'image': img_bytes, 'size': self.size, 'x': self._coords[0], 'y': self._coords[1],
+        data = {'image': img_bytes, 'size': self.original[0].size, 'x': self._coords[0], 'y': self._coords[1],
                 'visible': self.visible}
         return data
 

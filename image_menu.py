@@ -3,7 +3,6 @@ from tkinter import Menu
 from functions import get_images, get_image
 from image_object import ClickableObject, StaticButton
 from image_size import ImageSize
-from table import Table
 
 
 class ImageMenu:

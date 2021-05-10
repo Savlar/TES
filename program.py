@@ -40,6 +40,7 @@ class Program:
         self.clicked_object = None
         self.dragging = None
         self.path = None
+        self.manual_current_id = None
         self.action = False
         self.clicked_resizer = False
         self.serialized_data = []
@@ -160,6 +161,9 @@ class Program:
             self.action = False
             self.delete_marker()
             self.clicked_resizer = False
+        if self.manual_current_id:
+            self.canvas.itemconfig(self.manual_current_id, tag='image')
+            self.manual_current_id = None
         if self.dragging:
             if self.canvas.type(self.dragging) == 'image':
                 self.canvas.itemconfig(self.dragging, tag='image')
@@ -338,7 +342,7 @@ class Program:
     def delete_all(self):
         for obj in self.cloneable_images + self.added_tools + self.created_objects + self.created_images:
             obj.delete()
-        self.cloneable_images = self.added_tools = self.created_objects = self.created_images = []
+        self.cloneable_images, self.added_tools, self.created_objects, self.created_images = [], [], [], []
         if self.background:
             self.background.delete()
         self.background = None
@@ -377,6 +381,7 @@ class Program:
                 self.dragging = self.created_images[-1].obj
                 self.canvas.itemconfig(oid, tag='clone')
                 self.canvas.itemconfig(self.dragging, tag='current')
+                self.manual_current_id = self.dragging
 
     def get_image_by_id(self, id_):
         if self.background and self.background.obj == id_:
