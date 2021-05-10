@@ -61,7 +61,6 @@ class Program:
                 img.delete_drag()
                 img.move(e.x, e.y)
                 self.remove_from_table(img)
-            # TODO what does this do?
             self.dragging = None
             return True
         return False
@@ -69,8 +68,9 @@ class Program:
     def moved_tool(self, e, dragged_id):
         tool = next(filter(lambda x: x.obj == dragged_id, self.added_tools), None)
         if tool:
-            if not (self.clicked_resizer and abs(tool._coords[0] - e.x) < 5 and abs(tool._coords[1] - e.y) < 5):
+            if not (self.clicked_resizer and abs(tool._coords[0] - e.x) < 10 and abs(tool._coords[1] - e.y) < 10):
                 tool.move(e.x, e.y)
+            self.dragging = None
             return True
         return False
 
@@ -377,7 +377,6 @@ class Program:
         for img in self.cloneable_images:
             if img.obj == oid:
                 self.created_images.append(DraggableObject(e.x, e.y, self, img.original.copy()))
-                self.created_images[-1].check_coords()
                 self.dragging = self.created_images[-1].obj
                 self.canvas.itemconfig(oid, tag='clone')
                 self.canvas.itemconfig(self.dragging, tag='current')
@@ -410,7 +409,10 @@ class Program:
             self.save_exercise()
 
     def ask_delete(self):
-        return messagebox.askyesno(title='Alert', message='Chceš vymazať objekt?')
+        if messagebox.askyesno(title='Alert', message='Chceš vymazať objekt?'):
+            return True
+        self.delete_marker()
+        return False
 
     def flip_vertically(self, e):
         for image in reversed(self.created_images):

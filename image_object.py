@@ -3,7 +3,7 @@ from typing import Tuple
 
 from PIL import ImageTk, Image
 
-from constants import DRAG_SIZE, CLONE_SIZE, COPY_OFFSET, CLONE_X, CLONE_Y
+from constants import DRAG_SIZE, CLONE_SIZE, COPY_OFFSET, CLONE_X, CLONE_Y, AREA_X2, AREA_X1, AREA_Y1, AREA_Y2
 
 
 class ImageObject:
@@ -35,7 +35,18 @@ class ImageObject:
         else:
             self.canvas.itemconfig(self.obj, image=self.tk_img[0])
         self.canvas.tag_raise(self.obj)
+        self.check_image_size()
         self.check_coords()
+
+    def check_image_size(self):
+        w, h = self.pil_img[0].size
+        if w > AREA_X2 - AREA_X1:
+            scale = (AREA_X2 - AREA_X1) / w
+            self.resize(AREA_X2 - AREA_X1, scale * h)
+        w, h = self.pil_img[0].size
+        if h > AREA_Y2 - AREA_Y1:
+            scale = (AREA_Y2 - AREA_Y1) / h
+            self.resize(scale * w, AREA_Y2 - AREA_Y1)
 
     def reset(self):
         self.pil_img = self.original[:]

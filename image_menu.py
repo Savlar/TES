@@ -48,14 +48,13 @@ class ImageMenu:
                 return
             self.parent.remove_image(self.image)
             self.image.pil_img = files
-            self.image.initialize()
+            self.image.initialize(True)
         else:
             file = get_image()
             if not file:
                 return
-            self.delete()
             self.image.pil_img = [file]
-            self.image.initialize()
+            self.image.initialize(True)
         self.parent.add_to_table(self.image)
 
     def change_size(self):

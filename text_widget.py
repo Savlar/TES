@@ -29,7 +29,7 @@ class TextWidget:
         self.default_font = tkinter.StringVar(self.master)
         self.default_font.set('Arial')
 
-        fonts = [x for x in font.families()]
+        fonts = ['Arial', 'Helvetica', 'Comic Sans MS', 'Verdana', 'Consolas', 'Calibri', 'Cambria']
         self.font = tkinter.OptionMenu(self.master, self.default_font, *fonts)
         self.font.config(width=15)
         self.font.grid(row=2, column=0)
