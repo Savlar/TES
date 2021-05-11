@@ -41,7 +41,7 @@ class StudentProgram(Program):
             image.deletable = False
 
     def ask_save(self):
-        return False
+        super(StudentProgram, self).ask_save()
 
     def image_resizer(self, e):
         for image in reversed(self.created_images):

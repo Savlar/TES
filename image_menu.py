@@ -46,7 +46,7 @@ class ImageMenu:
             files = get_images()
             if not files:
                 return
-            self.image.original = files
+            self.image.pil_img = files
             self.image.initialize(True)
         else:
             file = get_image()

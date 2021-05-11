@@ -282,11 +282,14 @@ class Program:
     def copy(self, e):
         for image in reversed(self.created_images):
             if image.click(e):
+                if self.student and (isinstance(image, ClickableObject) or isinstance(image, StaticObject)):
+                    continue
                 self.created_images.append(copy.copy(image))
                 return
-        for obj in reversed(self.created_objects):
-            if obj.click(e):
-                self.created_objects.append(copy.copy(obj))
+        if not self.student:
+            for obj in reversed(self.created_objects):
+                if obj.click(e):
+                    self.created_objects.append(copy.copy(obj))
 
     def delete(self, e):
         for image in reversed(self.created_images):
