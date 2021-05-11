@@ -42,6 +42,8 @@ class Text:
         w2, h2 = (bounds[2] - bounds[0]) / 2, (bounds[3] - bounds[1]) / 2
         if x - w2 < AREA_X1 or x + w2 > AREA_X2 or y - h2 < AREA_Y1 or y + h2 > AREA_Y2:
             return
+        self.x = x
+        self.y = y
         self.canvas.coords(self.obj, x, y)
 
     def __copy__(self):

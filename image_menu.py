@@ -12,7 +12,7 @@ class ImageMenu:
         self.image = image
         self.menu = Menu(self.parent.canvas, tearoff=0)
         if isinstance(self.image, ClickableObject):
-            label = 'Zapnúť ťahací mód' if not self.image.dragging_mode else 'Vypnut tahaci mod'
+            label = 'Zapnúť ťahací mód' if not self.image.dragging_mode else 'Vypnúť ťahací mód'
             self.menu.add_command(label=label, command=self.change_mode)
         self.menu.add_command(label='Zmeň obrázok', command=self.change_image)
         if not bg and not isinstance(image, StaticButton):
