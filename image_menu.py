@@ -15,7 +15,7 @@ class ImageMenu:
             label = 'Zapnúť ťahací mód' if not self.image.dragging_mode else 'Vypnut tahaci mod'
             self.menu.add_command(label=label, command=self.change_mode)
         self.menu.add_command(label='Zmeň obrázok', command=self.change_image)
-        if not bg:
+        if not bg and not isinstance(image, StaticButton):
             self.menu.add_command(label='Zmeň veľkosť', command=self.change_size)
             label = 'Skryť obrázok pre žiaka' if self.image.visible else 'Zobraziť obrázok pre žiaka'
             self.menu.add_command(label=label, command=self.change_visibility)
@@ -30,6 +30,8 @@ class ImageMenu:
 
     def change_visibility(self):
         self.image.visible = not self.image.visible
+        self.image.pil_img = self.image.original[:]
+        self.image.initialize(True)
 
     def delete(self):
         self.parent.remove_image(self.image)

@@ -408,11 +408,11 @@ class Program:
         return serialized
 
     def ask_save(self):
-        if messagebox.askyesno(title='Alert', message='Chceš uložiť zadanie?'):
+        if messagebox.askyesno(title='Uloženie', message='Chceš uložiť zadanie?'):
             self.save_exercise()
 
     def ask_delete(self):
-        if messagebox.askyesno(title='Alert', message='Chceš vymazať objekt?'):
+        if messagebox.askyesno(title='Zmazanie', message='Chceš vymazať objekt?'):
             return True
         self.delete_marker()
         return False

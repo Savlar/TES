@@ -27,6 +27,7 @@ class ImageObject:
     def initialize(self, reset=False):
         self.size = self.pil_img[0].size
         self.original = self.pil_img[:]
+        self.change_opacity()
         self.to_tk_image()
         self.resize(*self.size)
         if not reset:
@@ -77,7 +78,6 @@ class ImageObject:
 
     def resize(self, w, h):
         w, h = int(w), int(h)
-        self.pil_img = self.original[:]
         self.index = 0
         self.to_tk_image()
         for i in range(len(self.pil_img)):
@@ -102,6 +102,14 @@ class ImageObject:
             self.pil_img[i] = self.pil_img[i].transpose(
                 method=Image.FLIP_TOP_BOTTOM if vertically else Image.FLIP_LEFT_RIGHT)
         self.initialize()
+
+    def change_opacity(self):
+        if not self.visible:
+            for i in range(len(self.pil_img)):
+                image = self.pil_img[i].copy()
+                image = image.convert('RGBA')
+                image.putalpha(127)
+                self.pil_img[i] = image
 
     def collision(self, e):
         x, y = e
